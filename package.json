@@ -1,0 +1,16 @@
+{
+  "name": "TSViewer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^0.36.0",
+    "fastify-helmet": "^1.0.2",
+    "gridfs-stream": "^1.1.1",
+    "moment": "^2.20.1",
+    "mongoose": "^4.13.7",
+    "promise-queue": "^2.2.3",
+    "stream-mmmagic": "^2.0.0",
+    "teamspeak-query": "^1.5.4"
+  }
+}
