@@ -65,7 +65,38 @@ class TSLib {
 				lastIP: r['client_lastip'],
 				lastUpdate: new Date()
 			}).save();
-			return user;
+			const isOnline = await this.isClientOnline({uid: user['uid']});
+			user['online'] = isOnline !== false;
+			if (isOnline !== false) {
+				try {
+					const currentData = await this.getOnlineClientInfo(isOnline);
+					if (currentData.hasOwnProperty('client_country')) user['country'] = currentData['client_country'];
+					if (currentData.hasOwnProperty('client_icon_id')) {
+						let signedInt = parseInt(currentData['client_icon_id']);
+						let unsignedInt;
+						if (Math.sign(signedInt) === -1) {
+							signedInt = signedInt * -1;
+							unsignedInt = 4294967296 - signedInt;
+						} else {
+							unsignedInt = signedInt;
+						}
+						user['iconID'] = JSON.stringify(unsignedInt);
+					}
+					if (currentData.hasOwnProperty('client_away')) user['away'] = currentData['client_away'] === '1';
+					if (currentData.hasOwnProperty('client_platform')) user['platform'] = currentData['client_platform'];
+					if (currentData.hasOwnProperty('client_version')) user['version'] = currentData['client_version'];
+					user['muted'] = {
+						input: false,
+						output: false
+					};
+					if (currentData.hasOwnProperty('client_output_muted')) user['muted']['output'] = currentData['client_output_muted'] === '1';
+					if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
+					if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
+					if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
+				} catch (e) {
+				}
+			}
+			return await user.save();
 		}
 	}
 
@@ -88,7 +119,57 @@ class TSLib {
 		};
 		user['lastIP'] = r['client_lastip'];
 		user['lastUpdate'] = new Date();
+		const isOnline = await this.isClientOnline({uid: user['uid']});
+		user['online'] = isOnline !== false;
+		if (isOnline !== false) {
+			try {
+				const currentData = await this.getOnlineClientInfo(isOnline);
+				if (currentData.hasOwnProperty('client_country')) user['country'] = currentData['client_country'];
+				if (currentData.hasOwnProperty('client_icon_id')) {
+					let signedInt = parseInt(currentData['client_icon_id']);
+					let unsignedInt;
+					if (Math.sign(signedInt) === -1) {
+						signedInt = signedInt * -1;
+						unsignedInt = 4294967296 - signedInt;
+					} else {
+						unsignedInt = signedInt;
+					}
+					user['iconID'] = JSON.stringify(unsignedInt);
+				}
+				if (currentData.hasOwnProperty('client_away')) user['away'] = currentData['client_away'] === '1';
+				if (currentData.hasOwnProperty('client_platform')) user['platform'] = currentData['client_platform'];
+				if (currentData.hasOwnProperty('client_version')) user['version'] = currentData['client_version'];
+				user['muted'] = {
+					input: false,
+					output: false
+				};
+				if (currentData.hasOwnProperty('client_output_muted')) user['muted']['output'] = currentData['client_output_muted'] === '1';
+				if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
+				if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
+				if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
+			} catch (e) {
+			}
+		}
 		return await user.save();
+	}
+
+	async getOnlineClientInfo(id) {
+		const currentData = await this.query.send('clientinfo', {clid: id});
+		return currentData;
+	}
+
+
+	async isClientOnline({dbid, uid}) {
+		const user = await this.getUserAndUpdateIfRequired({dbid, uid});
+		try {
+			const r = await this.query.send('clientgetids', {cluid: user['uid']});
+			if (r.hasOwnProperty('clid')) {
+				return r['clid'];
+			}
+		} catch (e) {
+			return false;
+		}
+		return false;
 	}
 
 	async getUserAndUpdateIfRequired(param) {
@@ -316,8 +397,38 @@ class TSLib {
 		}
 	}
 
-	async _sUAT(user, dest) {
-		const name = `avatar_${user['avatarID']}`;
+	async streamIcon({id, queue = true}) {
+		if (queue) {
+			return await this.streamFileTo({path: `/icon_${id}`, cid: 0});
+		} else {
+			return await this._streamFileTo({path: `/icon_${id}`, cid: 0});
+		}
+	}
+
+	async streamAvatarFrom({dbid, uid, user, queue = true}) {
+		if (!dbid && !uid && !user) throw new Error("You need to specify at least one: dbid, uid or user");
+		let u = user;
+		if (!u) {
+			u = await this.getUserAndUpdateIfRequired({dbid, uid});
+		}
+		u = JSON.parse(JSON.stringify(u));
+		if (!u.hasOwnProperty('avatarID')) throw new Error("User don't have an avatar.");
+		const id = u['avatarID'];
+		if (queue) {
+			return await this.streamFileTo({path: `/avatar_${id}`, cid: 0});
+		} else {
+			return await this._streamFileTo({path: `/avatar_${id}`, cid: 0});
+		}
+	}
+
+	async streamFileTo({path, cpw = "", dest, cid}) {
+		return await this.queue.add(() => {
+			return this._streamFileTo({path, cpw, dest, cid});
+		});
+	}
+
+	async _streamFileTo({path, cpw = "", dest, cid = 0}) {
+		const name = `/${cid}${path}`;
 		const exists = await new Promise((resolve, reject) => {
 			this.gfs.exist({filename: name}, (err, found) => {
 				if (err) return reject(err);
@@ -334,9 +445,9 @@ class TSLib {
 			const lastUpdated = meta['metadata']['lastUpdate'];
 			const datetime = new Date(parseInt(meta['metadata']['datetime']) * 1000);
 			if (moment(lastUpdated).isSameOrBefore(moment().subtract(this.cache, 'ms'))) {
-				const info = await this._getRemoteFileInfo({path: `/avatar_${user['avatarID']}`});
+				const info = await this._getRemoteFileInfo({path: path});
 				if (!moment(datetime).isSame(moment(new Date(parseInt(info['datetime']) * 1000)))) {
-					await this._insertAvatar(name, info['datetime'], user['avatarID']);
+					await this._insertFile({datetime: info['datetime'], path: path, cid, cpw});
 					const metaData = await new Promise((resolve, reject) => {
 						this.gfs.files.find({filename: name}).toArray((err, files) => {
 							if (err) return reject(err);
@@ -385,8 +496,8 @@ class TSLib {
 				}
 			}
 		} else {
-			const info = await this._getRemoteFileInfo({path: `/avatar_${user['avatarID']}`});
-			await this._insertAvatar(name, info['datetime'], user['avatarID']);
+			const info = await this._getRemoteFileInfo({path: path});
+			await this._insertFile({datetime: info['datetime'], path: path, cid, cpw});
 			const metaData = await new Promise((resolve, reject) => {
 				this.gfs.files.find({filename: name}).toArray((err, files) => {
 					if (err) return reject(err);
@@ -401,20 +512,14 @@ class TSLib {
 		}
 	}
 
-	async streamUserAvatarTo(user, dest) {
-		return await this.queue.add(() => {
-			return this._sUAT(user, dest);
-		});
-	}
-
-	async _insertAvatar(name, datetime, avatarID, sDest) {
+	async _insertFile({datetime, path, cpw = "", sDest, cid = 0}) {
 		return await new Promise(async (resolve, reject) => {
 			const r = await this.query.send('ftinitdownload', {
-				clientftfid: 1337,
-				name: `/avatar_${avatarID}`,
-				cid: 0,
+				clientftfid: Math.floor(Math.random() * 65535) + 1  ,
+				name: path,
+				cid: cid,
 				seekpos: 0,
-				cpw: ""
+				cpw: cpw
 			});
 			if (r['id']) return reject(r);
 			const client = new net.Socket();
@@ -423,7 +528,7 @@ class TSLib {
 			magic(client, (err, mime, output) => {
 				if (err) reject(err);
 				const GridWriteStream = this.gfs.createWriteStream({
-					filename: name,
+					filename: `/${cid}${path}`,
 					content_type: mime.type,
 					metadata: {
 						datetime: datetime,
@@ -647,7 +752,34 @@ class TSLib {
 				total: Number,
 				month: Number
 			},
-			lastIP: String
+			lastIP: String,
+			online: {
+				type: Boolean,
+				default: false
+			},
+			country: String,
+			iconID: String,
+			away: Boolean,
+			platform: String,
+			version: String,
+			muted: {
+				input: {
+					type: Boolean,
+					default: false
+				},
+				output: {
+					type: Boolean,
+					default: false
+				}
+			},
+			recording: {
+				type: Boolean,
+				default: false
+			},
+			channelCommander: {
+				type: Boolean,
+				default: false
+			}
 		}));
 
 		this.Channel = this.mongoose.model('Channel', this.mongoose.Schema({

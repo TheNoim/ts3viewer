@@ -4,13 +4,26 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "fastify": "^0.36.0",
     "fastify-helmet": "^1.0.2",
+    "fastify-static": "^0.5.0",
     "gridfs-stream": "^1.1.1",
     "moment": "^2.20.1",
     "mongoose": "^4.13.7",
     "promise-queue": "^2.2.3",
     "stream-mmmagic": "^2.0.0",
-    "teamspeak-query": "^1.5.4"
+    "teamspeak-query": "^1.5.4",
+    "vue": "^2.5.13",
+    "vuetify": "^0.17.5"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.2.1",
+    "parcel-plugin-vue": "^1.4.0"
+  },
+  "scripts": {
+    "start": "parcel build src/index.html -d public/ --public-url ./ && node index.js",
+    "dev": "parcel src/index.html"
   }
 }

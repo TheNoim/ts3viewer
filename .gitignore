@@ -9,3 +9,11 @@ test.js
 .idea/
 
 .DS_Store
+
+.cache/
+
+dist/
+
+public/
+
+
