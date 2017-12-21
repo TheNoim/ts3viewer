@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.17.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "fastify": "^0.36.0",
@@ -19,11 +20,13 @@
     "vuetify": "^0.17.5"
   },
   "devDependencies": {
+    "cross-env": "^5.1.2",
     "parcel-bundler": "^1.2.1",
     "parcel-plugin-vue": "^1.4.0"
   },
   "scripts": {
-    "start": "parcel build src/index.html -d public/ --public-url ./ && node index.js",
-    "dev": "parcel src/index.html"
+    "build": "cross-env NODE_ENV=production parcel build src/index.html -d public/ --public-url ./",
+    "watch": "cross-env NODE_ENV=development parcel watch src/index.html -d public/ --public-url ./",
+    "start": "cross-env NODE_ENV=production node index.js"
   }
 }

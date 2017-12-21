@@ -1,5 +1,5 @@
 <template>
-    <v-list two-line v-bind:class="[move ? move : '']">
+    <v-list two-line class="move" full-width>
         <template v-for="channel in channels">
             <div v-bind:key="channel.id">
                 <v-list-tile avatar @click="">
@@ -13,25 +13,26 @@
                     </v-list-tile-content>
                 </v-list-tile>
                 <treeClients v-if="channel.clients.length > 0" v-bind:clients="channel.clients"></treeClients>
-                <treeChild v-if="channel.children.length > 0" v-bind:channels="channel.children" v-bind:move="true"></treeChild>
+                <treeChild v-if="channel.children.length > 0" v-bind:channels="channel.children"></treeChild>
             </div>
         </template>
     </v-list>
 </template>
 
 <script>
-	import treeChild from './TreeChild';
 	import treeClients from './TreeClients';
 
 	export default {
-		name: "tree",
-        components: {treeChild, treeClients},
-        props: {
-			channels: Array,
-            move: Boolean
-        }
+		name: "treeChild",
+		components: {treeClients},
+		props: {
+			channels: Array
+		}
 	}
 </script>
 
 <style scoped>
+    .move {
+        margin-left: 30px;
+    }
 </style>

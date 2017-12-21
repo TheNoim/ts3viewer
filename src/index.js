@@ -8,5 +8,8 @@ Vue.use(Vuetify);
 
 new Vue({
 	el: '#app',
-	render: h => h(Index)
+	render: h => h(Index),
+	data() {
+		return {};
+	}
 });

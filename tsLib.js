@@ -63,7 +63,8 @@ class TSLib {
 					month: parseInt(r['client_month_bytes_downloaded'] || '0')
 				},
 				lastIP: r['client_lastip'],
-				lastUpdate: new Date()
+				lastUpdate: new Date(),
+				hasAvatar: !!r['client_flag_avatar']
 			}).save();
 			const isOnline = await this.isClientOnline({uid: user['uid']});
 			user['online'] = isOnline !== false;
@@ -109,6 +110,7 @@ class TSLib {
 		user['description'] = r['client_description'];
 		user['avatarID'] = r['client_base64HashClientUID'];
 		user['connections'] = parseInt(r['client_totalconnections']);
+		user['hasAvatar'] = !!r['client_flag_avatar'];
 		user['upload'] = {
 			total: parseInt(r['client_total_bytes_uploaded'] || '0'),
 			month: parseInt(r['client_month_bytes_uploaded'] || '0')
@@ -777,6 +779,10 @@ class TSLib {
 				default: false
 			},
 			channelCommander: {
+				type: Boolean,
+				default: false
+			},
+			hasAvatar: {
 				type: Boolean,
 				default: false
 			}
