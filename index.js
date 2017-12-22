@@ -53,6 +53,10 @@ fastify.get('/user/:type/:id', async (req, reply) => {
 	}
 });
 
+fastify.get('/user/', async (req, reply) => {
+	return await ts.getOnlineClients();
+});
+
 fastify.get('/icon/:id', async (req, reply) => {
 	if (req.params['id']) {
 		try {
