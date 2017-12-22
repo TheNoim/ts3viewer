@@ -9,7 +9,7 @@
                                 <v-icon color="red" slot="activator" v-if="!client.hasAvatar">face</v-icon>
                                 <span>{{client.nickname}} has no Avatar :(</span>
                             </v-tooltip>
-                            <img v-if="client.hasAvatar" v-bind:src="`/avatar/dbid/${client.dbid}`"/>
+                            <img v-if="client.hasAvatar" v-bind:src="`/avatar/dbid/${client.dbid}`" class="clientAvatar"/>
                         </v-list-tile-avatar>
                         <v-list-tile-content>
                             <v-list-tile-title v-html="client.nickname"></v-list-tile-title>
@@ -83,5 +83,9 @@
     .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
     {
         opacity: 0
+    }
+
+    .clientAvatar {
+        object-fit: contain;
     }
 </style>
