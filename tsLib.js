@@ -4,10 +4,12 @@ const fs = require('fs');
 const moment = require('moment');
 const magic = require('stream-mmmagic');
 const Queue = require('promise-queue');
+const EventEmitter = require('events');
 
-class TSLib {
+class TSLib extends EventEmitter{
 
 	constructor({ip = '127.0.0.1', port = 10011, username = "serveradmin", password, options = {}, server = 1, mongodb = "mongodb://localhost/teamspeak"}, cache = 1000 * 60) {
+		super();
 		this.ip = ip;
 		this.port = port;
 		this.username = username;
@@ -149,6 +151,7 @@ class TSLib {
 				if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
 				if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
 				if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
+				if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
 			} catch (e) {
 			}
 		}
@@ -196,7 +199,7 @@ class TSLib {
 		if (rc['id']) throw new Error(rc);
 		if (!Array.isArray(rc['client_database_id'])) {
 			if (rc['client_type'] === '0') {
-				let user = JSON.parse(JSON.stringify(await this.getUserAndUpdateIfRequired({dbid: rc['client_database_id']})));
+				let user = JSON.parse(JSON.stringify(await this.updateUser({dbid: rc['client_database_id']})));
 				user.channel = rc['cid'];
 				user.clientID = rc['clid'];
 				currentClients.push(user);
@@ -205,7 +208,7 @@ class TSLib {
 			for (const index in rc['client_database_id']) {
 				if (!rc['client_database_id'].hasOwnProperty(index)) continue;
 				if (rc['client_type'][index] === '0') {
-					let user = JSON.parse(JSON.stringify(await this.getUserAndUpdateIfRequired({dbid: rc['client_database_id'][index]})));
+					let user = JSON.parse(JSON.stringify(await this.updateUser({dbid: rc['client_database_id'][index]})));
 					user.channel = rc['cid'][index];
 					user.clientID = rc['clid'][index];
 					currentClients.push(user);
@@ -641,6 +644,7 @@ class TSLib {
 			this.query.on('cliententerview', this._clientEventUpdate.bind(this));
 			this.query.on('clientleftview', data => {
 				console.log(data);
+				this.emit('update');
 			});
 			this.query.on('clientmoved', this._clientEventUpdate.bind(this));
 			this.query.on('channeledited', this._channelEventUpdate.bind(this));
@@ -665,6 +669,7 @@ class TSLib {
 							console.log(`Deleted channel with ID ${data['cid']}`);
 							resolve();
 						}
+						this.emit('update');
 					});
 				});
 			})
@@ -679,6 +684,7 @@ class TSLib {
 					return this.updateUser({dbid: data['client_database_id']});
 				});
 				console.log(`Client with ID ${data['client_database_id']} updated!`);
+				this.emit('update');
 			} catch (e) {
 				console.log(`Failed to update user Info with ID ${data['client_database_id']}`);
 				console.error(e);
@@ -691,6 +697,7 @@ class TSLib {
 					return await this.updateUser({uid: r['client_unique_identifier']});
 				});
 				console.log(`Client with active ID ${data['clid']} updated!`);
+				this.emit('update');
 			} catch (e) {
 				console.log(`Failed to update user Info active with ID ${data['clid']}`);
 				console.error(e);
@@ -705,6 +712,7 @@ class TSLib {
 					return this.updateChannelInfo(data['cid'])
 				});
 				console.log(`Channel with ID ${data['cid']} updated!`);
+				this.emit('update');
 			} catch (e) {
 				console.log(`Failed to update Channel Info with ID ${data['cid']}`);
 				console.error(e);

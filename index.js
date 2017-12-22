@@ -3,6 +3,8 @@ const helmet = require('fastify-helmet');
 const TSLibrary = require('./tsLib');
 const path = require('path');
 
+const io = require('socket.io')(fastify.server);
+
 fastify.register(helmet);
 
 const ts = new TSLibrary({
@@ -15,6 +17,14 @@ const ts = new TSLibrary({
 	cache: process.env.TSVCACHE || 1000 * 120
 });
 
+
+io.on('connection', socket => {
+	console.log("Socket connection!");
+});
+
+ts.on('update', () => {
+	io.emit('update');
+});
 
 fastify.get('/avatar/:type/:id', async (req, reply) => {
 	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
@@ -68,10 +78,12 @@ fastify.register(require('fastify-static'), {
 	root: path.join(__dirname, 'public'),
 });
 
-fastify.listen(process.env.TSVPORT || 5000, process.env.TSVHOST || "0.0.0.0", err => {
-	if (err) {
-		console.error(err);
-		process.exit(1);
-	}
-	console.log(`Listen on ${process.env.TSVHOST || "0.0.0.0"}:${process.env.TSVPORT || 5000}`);
+ts.login().then(() => {
+	fastify.listen(process.env.TSVPORT || 5000, process.env.TSVHOST || "0.0.0.0", err => {
+		if (err) {
+			console.error(err);
+			process.exit(1);
+		}
+		console.log(`Listen on ${process.env.TSVHOST || "0.0.0.0"}:${process.env.TSVPORT || 5000}`);
+	});
 });
