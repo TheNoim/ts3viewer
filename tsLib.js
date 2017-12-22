@@ -97,6 +97,7 @@ class TSLib extends EventEmitter{
 					if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
 					if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
 					if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
+					if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = escape(currentData['client_nickname']);
 				} catch (e) {
 				}
 			}
@@ -152,7 +153,7 @@ class TSLib extends EventEmitter{
 				if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
 				if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
 				if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
-				if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
+				if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = escape(currentData['client_nickname']);
 			} catch (e) {
 			}
 		}
