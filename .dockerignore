@@ -1,0 +1,13 @@
+public/
+
+node_modules/
+
+dist/
+
+.cache/
+
+test.js
+
+codeBackup.js
+
+avatar.gif
