@@ -5,6 +5,7 @@ const moment = require('moment');
 const magic = require('stream-mmmagic');
 const Queue = require('promise-queue');
 const EventEmitter = require('events');
+const escape = require('escape-html');
 
 class TSLib extends EventEmitter{
 
@@ -49,11 +50,11 @@ class TSLib extends EventEmitter{
 			if (r['id']) throw new Error(`Can not find client with id ${id}.`);
 			const user = await new this.User({
 				uid: r['client_unique_identifier'],
-				nickname: r['client_nickname'],
+				nickname: escape(r['client_nickname']),
 				dbid: r['client_database_id'],
 				created: new Date(parseInt(r['client_created']) * 1000),
 				lastconnected: new Date(parseInt(r['client_lastconnected']) * 1000),
-				description: r['client_description'],
+				description: escape(r['client_description']),
 				avatarID: r['client_base64HashClientUID'],
 				connections: parseInt(r['client_totalconnections']),
 				upload: {
@@ -107,9 +108,9 @@ class TSLib extends EventEmitter{
 		const user = await this.getUser(param);
 		const r = await this.query.send('clientdbinfo', {cldbid: user['dbid']});
 		if (r['id']) throw new Error(`Can not find client with id ${id}.`);
-		user['nickname'] = r['client_nickname'];
+		user['nickname'] = escape(r['client_nickname']);
 		user['lastconnected'] = new Date(parseInt(r['client_lastconnected']) * 1000);
-		user['description'] = r['client_description'];
+		user['description'] = escape(r['client_description']);
 		user['avatarID'] = r['client_base64HashClientUID'];
 		user['connections'] = parseInt(r['client_totalconnections']);
 		user['hasAvatar'] = !!r['client_flag_avatar'];
@@ -230,7 +231,7 @@ class TSLib extends EventEmitter{
 		let prepareClientsForTree = {};
 		for (const index in r['channel_name'] || []) {
 			if (!(r['channel_name'] || []).hasOwnProperty(index)) continue;
-			const name = r['channel_name'][index];
+			const name = escape(r['channel_name'][index]);
 			const id = r['cid'][index];
 			const parent = r['pid'][index];
 			const clientCount = r['total_clients'][index];
@@ -244,7 +245,7 @@ class TSLib extends EventEmitter{
 			}
 			const iconID = unsignedInt;
 			const cInfo = await this.getChannelAndUpdateIfRequired(id);
-			const topic = cInfo['topic'];
+			const topic = escape(cInfo['topic']);
 			const password = cInfo['password'];
 			const maxClients = cInfo['maxClients'];
 			const maxClientCount = cInfo['maxClientCount'];
@@ -253,6 +254,7 @@ class TSLib extends EventEmitter{
 			const isDefault = cInfo['isDefault'];
 			const isPrivate = cInfo['isPrivate'];
 			const permanent = cInfo['permanent'];
+			const description = cInfo['description'];
 			const channel = {
 				name,
 				id,
@@ -269,7 +271,8 @@ class TSLib extends EventEmitter{
 				isPrivate,
 				permanent,
 				tempChildren: [],
-				children: []
+				children: [],
+				description
 			};
 			if (withClients) channel.clients = [];
 			channels.push(channel);
@@ -335,9 +338,9 @@ class TSLib extends EventEmitter{
 			}
 			return await new this.Channel({
 				id: id,
-				name: r['channel_name'],
-				topic: r['channel_topic'],
-				description: r['channel_description'],
+				name: escape(r['channel_name']),
+				topic: escape(r['channel_topic']),
+				description: escape(r['channel_description']),
 				password: r['channel_flag_password'] === '1',
 				maxClientCount: parseInt(r['channel_maxclients']),
 				maxClients: r['channel_flag_maxclients_unlimited'] === '1',
@@ -362,9 +365,9 @@ class TSLib extends EventEmitter{
 	async updateChannelInfo(id) {
 		const channel = await this.getChannelInfo(id);
 		const r = await this.query.send('channelinfo', {cid: id});
-		channel['name'] = r['channel_name'];
-		channel['topic'] = r['channel_topic'];
-		channel['description'] = r['channel_description'];
+		channel['name'] = escape(r['channel_name']);
+		channel['topic'] = escape(r['channel_topic']);
+		channel['description'] = escape(r['channel_description']);
 		channel['password'] = r['channel_flag_password'] === '1';
 		channel['maxClientCount'] = parseInt(r['channel_maxclients']);
 		channel['maxClients'] = r['channel_flag_maxclients_unlimited'] === '1';
