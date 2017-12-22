@@ -12,13 +12,13 @@
                             </v-tooltip>
                             <v-tooltip bottom>
                                 <v-icon slot="activator" v-bind:color="channel.isDefault ? 'red' : ''" v-if="channel.password">lock</v-icon>
-                                <span v-if="!channel.isDefault">{{channel.name}} is locked with a password</span>
-                                <span v-if="channel.isDefault">{{channel.name}} is locked with a password and the default channel</span>
+                                <span v-if="!channel.isDefault">{{unescape(channel.name)}} is locked with a password</span>
+                                <span v-if="channel.isDefault">{{unescape(channel.name)}} is locked with a password and the default channel</span>
                             </v-tooltip>
                         </v-list-tile-avatar>
                         <v-list-tile-content>
-                            <v-list-tile-title v-html="channel.name"></v-list-tile-title>
-                            <v-list-tile-sub-title v-html="channel.topic"></v-list-tile-sub-title>
+                            <v-list-tile-title>{{unescape(channel.name)}}</v-list-tile-title>
+                            <v-list-tile-sub-title>{{unescape(channel.topic)}}</v-list-tile-sub-title>
                         </v-list-tile-content>
                     </v-list-tile>
                     <v-divider></v-divider>
@@ -33,6 +33,7 @@
 <script>
 	import treeChild from './TreeChild';
 	import treeClients from './TreeClients';
+	import decode from 'ent/decode';
 
 	export default {
 		name: "tree",
@@ -40,7 +41,12 @@
         props: {
 			channels: Array,
             move: Boolean
-        }
+        },
+		methods: {
+			unescape(string) {
+				return decode(string);
+			}
+		}
 	}
 </script>
 

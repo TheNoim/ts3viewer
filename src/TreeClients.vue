@@ -7,12 +7,12 @@
                         <v-list-tile-avatar>
                             <v-tooltip bottom>
                                 <v-icon color="red" slot="activator" v-if="!client.hasAvatar">face</v-icon>
-                                <span>{{client.nickname}} has no Avatar :(</span>
+                                <span>{{unescape(client.nickname)}} has no Avatar :(</span>
                             </v-tooltip>
                             <img v-if="client.hasAvatar" v-bind:src="`/avatar/dbid/${client.dbid}`" class="clientAvatar"/>
                         </v-list-tile-avatar>
                         <v-list-tile-content>
-                            <v-list-tile-title v-html="client.nickname"></v-list-tile-title>
+                            <v-list-tile-title>{{unescape(client.nickname)}}</v-list-tile-title>
                             <v-list-tile-sub-title>
                                 <v-tooltip bottom v-if="client.muted.input">
                                     <v-icon slot="activator" small>mic_off</v-icon>
@@ -62,11 +62,17 @@
 
 <script>
     import Vue from 'vue';
+	import decode from 'ent/decode';
 
 	export default {
 		name: "treeClients",
 		props: {
 			clients: Array
+		},
+		methods: {
+			unescape(string) {
+				return decode(string);
+			}
 		}
 	}
 </script>
