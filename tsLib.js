@@ -5,7 +5,10 @@ const moment = require('moment');
 const magic = require('stream-mmmagic');
 const Queue = require('promise-queue');
 const EventEmitter = require('events');
-const escape = require('ent/encode');
+const escape2 = require('ent/encode');
+const escape = function (string) {
+	return string ? escape2(string) : undefined;
+}
 //const escape = require('escape-html');
 
 class TSLib extends EventEmitter{
