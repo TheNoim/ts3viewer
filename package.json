@@ -30,6 +30,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production parcel build src/index.html -d public/ --public-url ./",
     "watch": "cross-env NODE_ENV=development parcel watch src/index.html -d public/ --public-url ./",
-    "start": "cross-env NODE_ENV=production node index.js"
+    "start": "cross-env NODE_ENV=production node index.js",
+    "docker": "docker build -t 3003/tsviewer . && docker push 3003/tsviewer"
   }
 }
