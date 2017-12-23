@@ -67,8 +67,11 @@
 			},
             socket() {
 	            const socket = io();
-	            socket.on('update', () => {
-	            	this.loadData();
+	            socket.on('update', (data) => {
+	            	this.$set(this.$data, 'channelTree', data);
+                });
+                socket.on('updateYourself', () => {
+                    this.loadData();
                 });
             },
             darkModeEvent() {

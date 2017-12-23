@@ -2,6 +2,7 @@ const fastify = require('fastify')();
 const helmet = require('fastify-helmet');
 const TSLibrary = require('./tsLib');
 const path = require('path');
+const _ = require('lodash');
 
 const io = require('socket.io')(fastify.server);
 
@@ -22,9 +23,40 @@ io.on('connection', socket => {
 	console.log("Socket connection!");
 });
 
-ts.on('update', () => {
-	io.emit('update');
+ts.on('update', async () => {
+	let newData;
+	try {
+		newData = await ts.getChannelTree();
+	} catch(e) {
+		console.error(e);
+		setTimeout(refreshData, 800);
+	}
+	if (newData) {
+		io.emit('update', newData);
+	} else {
+		io.emit('updateYourself');
+	}
 });
+
+let lastData;
+
+async function refreshData() {
+	let newData;
+	try {
+		newData = await ts.getChannelTree();
+	} catch(e) {
+		console.error(e);
+		setTimeout(refreshData, 500);
+	}
+
+	if (!_.isEqual(newData, lastData)) {
+		lastData = newData;
+		io.emit('update', newData);
+	}
+	setTimeout(refreshData, 500);
+}
+
+setTimeout(refreshData, 500);
 
 fastify.get('/avatar/:type/:id', async (req, reply) => {
 	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
