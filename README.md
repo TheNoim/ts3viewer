@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/TheNoim/ts3viewer.svg?branch=master)](https://travis-ci.org/TheNoim/ts3viewer)
 
+![Picture](assets/ts3viewergithub.png)
+
 ### Docker
 [Docker Repository](https://hub.docker.com/r/3003/tsviewer/)
 
