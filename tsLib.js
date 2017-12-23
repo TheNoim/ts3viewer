@@ -5,11 +5,6 @@ const moment = require('moment');
 const magic = require('stream-mmmagic');
 const Queue = require('promise-queue');
 const EventEmitter = require('events');
-const escape2 = require('ent/encode');
-const escape = function (string) {
-	return string ? escape2(string) : undefined;
-}
-//const escape = require('escape-html');
 
 class TSLib extends EventEmitter{
 
@@ -54,11 +49,11 @@ class TSLib extends EventEmitter{
 			if (r['id']) throw new Error(`Can not find client with id ${id}.`);
 			const user = await new this.User({
 				uid: r['client_unique_identifier'],
-				nickname: escape(r['client_nickname']) || "",
+				nickname: r['client_nickname'],
 				dbid: r['client_database_id'],
 				created: new Date(parseInt(r['client_created']) * 1000),
 				lastconnected: new Date(parseInt(r['client_lastconnected']) * 1000),
-				description: escape(r['client_description']) || "",
+				description: r['client_description'],
 				avatarID: r['client_base64HashClientUID'],
 				connections: parseInt(r['client_totalconnections']),
 				upload: {
@@ -101,7 +96,7 @@ class TSLib extends EventEmitter{
 					if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
 					if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
 					if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
-					if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = escape(currentData['client_nickname']) || "";
+					if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
 				} catch (e) {
 				}
 			}
@@ -113,9 +108,9 @@ class TSLib extends EventEmitter{
 		const user = await this.getUser(param);
 		const r = await this.query.send('clientdbinfo', {cldbid: user['dbid']});
 		if (r['id']) throw new Error(`Can not find client with id ${id}.`);
-		user['nickname'] = escape(r['client_nickname']) || "";
+		user['nickname'] = r['client_nickname'];
 		user['lastconnected'] = new Date(parseInt(r['client_lastconnected']) * 1000);
-		user['description'] = escape(r['client_description']) || "";
+		user['description'] = r['client_description'];
 		user['avatarID'] = r['client_base64HashClientUID'];
 		user['connections'] = parseInt(r['client_totalconnections']);
 		user['hasAvatar'] = !!r['client_flag_avatar'];
@@ -157,7 +152,7 @@ class TSLib extends EventEmitter{
 				if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
 				if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
 				if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
-				if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = escape(currentData['client_nickname']) || "";
+				if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
 			} catch (e) {
 			}
 		}
@@ -236,7 +231,7 @@ class TSLib extends EventEmitter{
 		let prepareClientsForTree = {};
 		for (const index in r['channel_name'] || []) {
 			if (!(r['channel_name'] || []).hasOwnProperty(index)) continue;
-			const name = escape(r['channel_name'][index]) || "";
+			const name = r['channel_name'][index];
 			const id = r['cid'][index];
 			const parent = r['pid'][index];
 			const clientCount = r['total_clients'][index];
@@ -250,7 +245,7 @@ class TSLib extends EventEmitter{
 			}
 			const iconID = unsignedInt;
 			const cInfo = await this.getChannelAndUpdateIfRequired(id);
-			const topic = escape(cInfo['topic']) || "";
+			const topic = cInfo['topic'];
 			const password = cInfo['password'];
 			const maxClients = cInfo['maxClients'];
 			const maxClientCount = cInfo['maxClientCount'];
@@ -259,7 +254,7 @@ class TSLib extends EventEmitter{
 			const isDefault = cInfo['isDefault'];
 			const isPrivate = cInfo['isPrivate'];
 			const permanent = cInfo['permanent'];
-			const description = escape(cInfo['description']) || '';
+			const description = cInfo['description'];
 			const channel = {
 				name,
 				id,
@@ -343,9 +338,9 @@ class TSLib extends EventEmitter{
 			}
 			return await new this.Channel({
 				id: id,
-				name: escape(r['channel_name']) || "",
-				topic: escape(r['channel_topic']) || "",
-				description: escape(r['channel_description']) || "",
+				name: r['channel_name'],
+				topic: r['channel_topic'],
+				description: r['channel_description'],
 				password: r['channel_flag_password'] === '1',
 				maxClientCount: parseInt(r['channel_maxclients']),
 				maxClients: r['channel_flag_maxclients_unlimited'] === '1',
@@ -360,7 +355,7 @@ class TSLib extends EventEmitter{
 				needTalkPower: r['channel_needed_talk_power'] === '1',
 				secure: r['channel_codec_is_unencrypted'] !== '1',
 				isPrivate: r['channel_flag_private'] === '1',
-				namePHONETIC: escape(r['channel_name_phonetic']) || '',
+				namePHONETIC: r['channel_name_phonetic'],
 				parent: r['pid'],
 				lastUpdate: new Date()
 			}).save();
@@ -370,9 +365,9 @@ class TSLib extends EventEmitter{
 	async updateChannelInfo(id) {
 		const channel = await this.getChannelInfo(id);
 		const r = await this.query.send('channelinfo', {cid: id});
-		channel['name'] = escape(r['channel_name']) || "";
-		channel['topic'] = escape(r['channel_topic']) || "";
-		channel['description'] = escape(r['channel_description']) || "";
+		channel['name'] = r['channel_name'];
+		channel['topic'] = r['channel_topic'];
+		channel['description'] = r['channel_description'];
 		channel['password'] = r['channel_flag_password'] === '1';
 		channel['maxClientCount'] = parseInt(r['channel_maxclients']);
 		channel['maxClients'] = r['channel_flag_maxclients_unlimited'] === '1';
@@ -395,7 +390,7 @@ class TSLib extends EventEmitter{
 		channel['needTalkPower'] = r['channel_needed_talk_power'] === '1';
 		channel['secure'] = r['channel_codec_is_unencrypted'] !== '1';
 		channel['isPrivate'] = r['channel_flag_private'] === '1';
-		channel['namePHONETIC'] = escape(r['channel_name_phonetic']) || '';
+		channel['namePHONETIC'] = r['channel_name_phonetic'];
 		channel['parent'] = r['pid'];
 		channel['lastUpdate'] = new Date();
 		return await channel.save();
