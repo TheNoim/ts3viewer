@@ -40,3 +40,6 @@ You need to use env variables.
 |TSVCACHE          | Cache time in ms               | `120000`                        | `2000`                           |
 |TSVPORT           | Webserver port                 | `5000`                          | `8080`                           |
 |TSVHOST           | Webserver host                 | `0.0.0.0`                       | `127.0.0.1`                      |
+|TSVDARKMODE       | UI dark mode default           | `true`                          | `false`                          |
+|TSVBBCODE         | BBCode enabled (WIP)           | `true`                          | `false`                          |
+ 

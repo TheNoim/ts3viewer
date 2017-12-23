@@ -2,8 +2,8 @@ const fs = require('fs');
 const packageJSON = require('./package');
 
 const settings = {
-	darkMode: process.env.TSVDARKMODE === 'true' || true,
-	bbCode: process.env.TSVBBCODE === 'true' || true,
+	darkMode: process.env.TSVDARKMODE === 'true',
+	bbCode: process.env.TSVBBCODE === 'true',
 	version: packageJSON.version
 };
 

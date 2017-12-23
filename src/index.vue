@@ -1,18 +1,17 @@
 <template>
-    <v-app dark>
+    <v-app v-bind:dark="this.$root.$data.darkMode">
         <v-layout column>
             <div>
                 <v-toolbar dense fixed>
                     <v-toolbar-title>Teamspeak Viewer</v-toolbar-title>
                     <v-spacer></v-spacer>
+                    <v-switch v-model="darkMode" label="Dark Mode" hide-details class="darkModeSwitch"></v-switch>
                     <v-toolbar-items class="hidden-sm-and-down">
                         <v-btn flat color="accent" v-bind:disabled="loading" @click="loadData()">Reload</v-btn>
                     </v-toolbar-items>
-                    <v-toolbar-items class="hidden-md-and-up">
-                        <v-btn icon @click="loadData()">
-                            <v-icon>refresh</v-icon>
-                        </v-btn>
-                    </v-toolbar-items>
+                    <v-btn icon @click="loadData()" class="hidden-md-and-up">
+                        <v-icon>refresh</v-icon>
+                    </v-btn>
                 </v-toolbar>
             </div>
             <div class="main">
@@ -42,12 +41,14 @@
 		data() {
 			return {
 				loading: true,
-				channelTree: []
+				channelTree: [],
+                darkMode: this.$root.$data.darkMode
 			};
 		},
 		mounted() {
 			this.loadData();
 			this.socket();
+			this.darkModeEvent();
 		},
 		methods: {
 			async loadData() {
@@ -61,6 +62,11 @@
 	            const socket = io();
 	            socket.on('update', () => {
 	            	this.loadData();
+                });
+            },
+            darkModeEvent() {
+				this.$watch('darkMode', () => {
+					this.$root.$set(this.$root.$data, 'darkMode', this.$data.darkMode);
                 });
             }
 		}
@@ -80,5 +86,9 @@
     .main {
         padding-top: 48px;
         padding-bottom: 36px;
+    }
+
+    .darkModeSwitch {
+        max-width: 125px;
     }
 </style>

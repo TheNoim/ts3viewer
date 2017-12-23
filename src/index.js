@@ -6,7 +6,15 @@ import 'vuetify/dist/vuetify.min.css';
 import 'mdi/css/materialdesignicons.min.css';
 import settings from './settings';
 
-Vue.use(Vuetify);
+Vue.use(Vuetify)
+
+if (getParameterByName('dark') === 'true') {
+	settings.darkMode = true;
+}
+
+if (getParameterByName('light') || getParameterByName('dark') === 'false') {
+	settings.darkMode = false;
+}
 
 new Vue({
 	el: '#app',
@@ -15,3 +23,13 @@ new Vue({
 		return settings;
 	}
 });
+
+function getParameterByName(name, url) {
+	if (!url) url = window.location.href;
+	name = name.replace(/[\[\]]/g, "\\$&");
+	var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+		results = regex.exec(url);
+	if (!results) return null;
+	if (!results[2]) return '';
+	return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
