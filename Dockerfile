@@ -16,4 +16,4 @@ RUN yarn build
 
 EXPOSE 5000
 
-CMD ["yarn", "start:docker"]
+CMD ["yarn", "dockerstartup"]
