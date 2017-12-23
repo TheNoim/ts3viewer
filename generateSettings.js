@@ -7,4 +7,8 @@ const settings = {
 	version: packageJSON.version
 };
 
+console.log(`Dark mode: ${process.env.TSVDARKMODE}`);
+console.log(`BBCode: ${process.env.TSVBBCODE}`);
+console.log(`Settings: ${JSON.stringify(settings)}`);
+
 fs.writeFileSync('./src/settings.js', `module.exports = ${JSON.stringify(settings)};`);
