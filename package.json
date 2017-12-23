@@ -28,8 +28,9 @@
     "parcel-plugin-vue": "^1.4.0"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production parcel build src/index.html -d public/ --public-url ./",
-    "watch": "cross-env NODE_ENV=development parcel watch src/index.html -d public/ --public-url ./",
+    "build": "node generateSettings.js && cross-env NODE_ENV=production parcel build src/index.html -d public/ --public-url ./",
+    "watch": "node generateSettings.js && cross-env NODE_ENV=development parcel watch src/index.html -d public/ --public-url ./",
+    "start:docker": "npm run-script build && npm run-script start",
     "start": "cross-env NODE_ENV=production node index.js",
     "docker": "docker build -t 3003/tsviewer . && docker push 3003/tsviewer"
   }
