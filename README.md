@@ -29,17 +29,19 @@ yarn start // you first need to build with yarn build
 You need to use env variables.
 
 ##### List of env variables:
-| Variable         | Description                    | Default                         | Example                          |
-|------------------|--------------------------------|---------------------------------|----------------------------------|
-|TSVSERVERIP       | Teamspeak server ip/host       | `127.0.0.1`                     | `myserver.com`                   |
-|TSVSERVERPORT     | Teamspeak server query port    | `10011`                         | `10011`                          |
-|TSVSERVERUSERNAME | Teamspeak query admin username | `serveradmin`                   | `serveradmin`                    |
-|TSVSERVERPASSWORD | Teamspeak query admin password |                                 | `mypassword`                     |
-|TSVSERVER         | Teamspeak virtual server id    | `1`                             | `1`                              |
-|TSVMONGO          | MongoDB address                | `mongodb://localhost/teamspeak` | `mongodb://172.17.0.6/teamspeak` |
-|TSVCACHE          | Cache time in ms               | `120000`                        | `2000`                           |
-|TSVPORT           | Webserver port                 | `5000`                          | `8080`                           |
-|TSVHOST           | Webserver host                 | `0.0.0.0`                       | `127.0.0.1`                      |
-|TSVDARKMODE       | UI dark mode default           | `false`                         | `true`                           |
-|TSVBBCODE         | BBCode enabled (WIP)           | `false `                        | `true`                           |
+| Variable         | Description                        | Default                         | Example                          |
+|------------------|------------------------------------|---------------------------------|----------------------------------|
+|TSVSERVERIP       | Teamspeak server ip/host           | `127.0.0.1`                     | `myserver.com`                   |
+|TSVSERVERPORT     | Teamspeak server query port        | `10011`                         | `10011`                          |
+|TSVSERVERUSERNAME | Teamspeak query admin username     | `serveradmin`                   | `serveradmin`                    |
+|TSVSERVERPASSWORD | Teamspeak query admin password     |                                 | `mypassword`                     |
+|TSVSERVER         | Teamspeak virtual server id        | `1`                             | `1`                              |
+|TSVMONGO          | MongoDB address                    | `mongodb://localhost/teamspeak` | `mongodb://172.17.0.6/teamspeak` |
+|TSVCACHE          | Cache time in ms                   | `120000`                        | `2000`                           |
+|TSVPORT           | Webserver port                     | `5000`                          | `8080`                           |
+|TSVHOST           | Webserver host                     | `0.0.0.0`                       | `127.0.0.1`                      |
+|TSVDARKMODE       | UI dark mode default               | `false`                         | `true`                           |
+|TSVBBCODE         | BBCode enabled (WIP)               | `false `                        | `true`                           |
+|TSVTITLE          | Title (HTML supported)             | Teamspeak 3 Viewer              | My Teamspeak                     |
+|TSVFOOTERTEXT     | Right footer Text (HTML supported) |                                 | © 2017                           |
  

@@ -3,7 +3,7 @@
         <v-layout column>
             <div>
                 <v-toolbar dense fixed>
-                    <v-toolbar-title>Teamspeak Viewer</v-toolbar-title>
+                    <v-toolbar-title v-html="title"></v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-switch v-model="darkMode" label="Dark Mode" hide-details class="darkModeSwitch"></v-switch>
                     <v-toolbar-items class="hidden-sm-and-down">
@@ -25,7 +25,11 @@
                     </v-container>
                 </transition>
             </div>
-            <!--<v-footer fixed></v-footer>-->
+            <v-footer fixed>
+                <div>Teamspeak 3 Viewer {{version}} by TheNoim</div>
+                <v-spacer></v-spacer>
+                <div v-html="customFooterText"></div>
+            </v-footer>
         </v-layout>
     </v-app>
 </template>
@@ -42,7 +46,10 @@
 			return {
 				loading: true,
 				channelTree: [],
-                darkMode: this.$root.$data.darkMode
+                darkMode: this.$root.$data.darkMode,
+                title: this.$root.$data.title,
+                version: this.$root.$data.version,
+				customFooterText: this.$root.$data.customFooterText
 			};
 		},
 		mounted() {
