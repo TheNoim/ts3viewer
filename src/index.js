@@ -5,8 +5,10 @@ import Index from './index.vue';
 import 'vuetify/dist/vuetify.min.css';
 import 'mdi/css/materialdesignicons.min.css';
 import settings from './settings';
+import VueImg from 'v-img';
 
-Vue.use(Vuetify)
+Vue.use(Vuetify);
+Vue.use(VueImg, {sourceButton: true});
 
 if (getParameterByName('dark') === 'true') {
 	settings.darkMode = true;

@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
         <div>
-            <v-list-tile avatar @click="">
+            <v-list-tile avatar @click="info = true">
                 <v-list-tile-avatar>
                     <v-tooltip bottom>
                         <v-icon slot="activator" v-bind:color="channel.isDefault ? 'red' : ''" v-if="!channel.password">folder</v-icon>
@@ -26,19 +26,31 @@
             <template v-if="channel.children.length > 0" v-for="ch in channel.children">
                 <channel v-bind:key="ch.id" v-bind:channel="ch" class="move"></channel>
             </template>
+            <channel-details :show="info" :channel="channel" v-on:close="close()"></channel-details>
         </div>
     </transition>
 </template>
 
 <script>
     import client from './Client';
+    import ChannelDetails from './ChannelDetails';
 
 	export default {
 		name: "channel",
-		components: {client},
+		components: {
+			ChannelDetails,
+			client},
         props: {
 			channel: Object
-        }
+        },
+		data() {
+			return {info: false};
+		},
+        methods: {
+			close() {
+				this.$set(this.$data, 'info', false);
+			}
+		},
 	}
 </script>
 

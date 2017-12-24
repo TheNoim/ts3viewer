@@ -2885,6 +2885,10 @@ nocache@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/nocache/-/nocache-2.0.0.tgz#202b48021a0c4cbde2df80de15a17443c8b43980"
 
+node-bbcode@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/node-bbcode/-/node-bbcode-1.0.0.tgz#1c6fd3bb2db5ca53b3ac45e0663386b7d52fc142"
+
 node-libs-browser@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/node-libs-browser/-/node-libs-browser-2.1.0.tgz#5f94263d404f6e44767d726901fff05478d600df"
@@ -4501,6 +4505,10 @@ uuid@^3.0.0:
 uws@~0.14.4:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/uws/-/uws-0.14.5.tgz#67aaf33c46b2a587a5f6666d00f7691328f149dc"
+
+v-img@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/v-img/-/v-img-0.1.9.tgz#a14171743a2566b87518e6c4d5422576eee6c38f"
 
 v8-compile-cache@^1.1.0:
   version "1.1.0"

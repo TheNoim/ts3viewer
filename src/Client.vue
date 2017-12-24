@@ -1,13 +1,13 @@
 <template>
     <transition name="fade">
         <div>
-            <v-list-tile avatar @click="">
+            <v-list-tile avatar @click="info = true">
                 <v-list-tile-avatar>
                     <v-tooltip bottom>
                         <v-icon color="red" slot="activator" v-if="!client.hasAvatar">face</v-icon>
                         <span>{{client.nickname}} has no Avatar :(</span>
                     </v-tooltip>
-                    <img v-if="client.hasAvatar" v-bind:src="`/avatar/dbid/${client.dbid}`" class="clientAvatar"/>
+                    <img v-if="client.hasAvatar" v-img v-bind:src="`/avatar/dbid/${client.dbid}`" class="clientAvatar" :alt="`${client.nickname} avatar`"/>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
                     <v-list-tile-title>{{client.nickname}}</v-list-tile-title>
@@ -52,16 +52,32 @@
                 </v-list-tile-content>
             </v-list-tile>
             <v-divider></v-divider>
+            <client-details :show="info" :client="client" v-on:close="close()"></client-details>
         </div>
     </transition>
 </template>
 
 <script>
+    import * as BBCode from 'node-bbcode';
+    import ClientDetails from './ClientDetails';
+
 	export default {
 		name: "client",
         props: {
 			client: Object
-        }
+        },
+        data() {
+			return {info: false, avatar: null};
+        },
+        methods: {
+			bbcode(string) {
+				return BBCode.render(string ? string : '', {newLine: false});
+            },
+            close() {
+                this.$set(this.$data, 'info', false);
+            }
+        },
+        components: {ClientDetails}
 	}
 </script>
 
