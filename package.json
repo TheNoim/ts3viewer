@@ -15,7 +15,6 @@
     "mdi": "^2.1.19",
     "moment": "^2.20.1",
     "mongoose": "^4.13.7",
-    "node-bbcode": "^1.0.0",
     "promise-queue": "^2.2.3",
     "socket.io": "^2.0.4",
     "socket.io-client": "^2.0.4",

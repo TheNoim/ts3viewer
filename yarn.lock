@@ -2885,10 +2885,6 @@ nocache@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/nocache/-/nocache-2.0.0.tgz#202b48021a0c4cbde2df80de15a17443c8b43980"
 
-node-bbcode@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/node-bbcode/-/node-bbcode-1.0.0.tgz#1c6fd3bb2db5ca53b3ac45e0663386b7d52fc142"
-
 node-libs-browser@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/node-libs-browser/-/node-libs-browser-2.1.0.tgz#5f94263d404f6e44767d726901fff05478d600df"
