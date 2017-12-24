@@ -58,7 +58,6 @@
 </template>
 
 <script>
-    import * as BBCode from 'node-bbcode';
     import ClientDetails from './ClientDetails';
 
 	export default {
