@@ -9,10 +9,7 @@ env:
   - REPO=3003/tsviewer
 
 script:
-  - export TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "latest"; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi`
-  - if [[ $TRAVIS_BRANCH ]] && [[ $TRAVIS_BRANCH != "master" ]]; then
-      export TAG=beta
-      fi
+  - export TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "latest"; else echo dev; fi`
   - docker build -t $REPO:$TAG -f Dockerfile .
 after_success:
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
