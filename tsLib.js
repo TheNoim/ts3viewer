@@ -30,6 +30,8 @@ class TSLib extends EventEmitter{
 		this.queue = new Queue(1);
 		this._registerDBEvent();
 		this._generateDBModels();
+
+		this.indexClients = this.indexClients.bind(this);
 	}
 
 	async getUser({uid, dbid}) {
@@ -842,8 +844,36 @@ class TSLib extends EventEmitter{
 		}));
 	}
 
-	async getIcon(id) {
-
+	async indexClients() {
+		const listClients = await this.query.send('clientdblist', {duration: 200},'-count');
+		const realCount = parseInt(listClients['count']);
+		const rep = Math.ceil(realCount / 200);
+		let ids = [];
+		if (rep !== 1) {
+			let start = 0;
+			let duration = 200;
+			for (let i = 0; i < rep; i++) {
+				const iterationClients = await this.query.send('clientdblist', {start, duration});
+				if (!Array.isArray(iterationClients['cldbid'])) {
+					ids.push(iterationClients['cldbid']);
+				} else {
+					for (const id of iterationClients['cldbid']) ids.push(id);
+				}
+				start = start + duration;
+			}
+		} else {
+			if (!Array.isArray(listClients['cldbid'])) {
+				ids.push(listClients['cldbid']);
+			} else {
+				for (const id of listClients['cldbid']) ids.push(id);
+			}
+		}
+		for (const index in ids) {
+			if (!ids.hasOwnProperty(index)) continue;
+			const c = await this.updateUser({dbid: ids[index]});
+			this.emit('indexProgress', {count: realCount, current: index, lastClient: c['nickname'] || c['dbid']});
+		}
+		this.emit('indexFinished');
 	}
 }
 

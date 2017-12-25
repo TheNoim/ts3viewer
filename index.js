@@ -3,6 +3,7 @@ const helmet = require('fastify-helmet');
 const TSLibrary = require('./tsLib');
 const path = require('path');
 const _ = require('lodash');
+const ProgressBar = require('progress');
 
 const io = require('socket.io')(fastify.server);
 
@@ -19,8 +20,22 @@ const ts = new TSLibrary({
 });
 
 
+let bar;
+
 io.on('connection', socket => {
 	console.log("Socket connection ->", socket.conn.remoteAddress);
+});
+
+ts.on('indexProgress', ({count, current, lastClient}) => {
+	if (!bar) bar = new ProgressBar('Indexing clients [:bar] :percent :etas ETA Indexed: :last', {total: count});
+	bar.tick(1, {
+		"last": lastClient
+	});
+});
+
+ts.on('indexFinished', () => {
+	bar = null;
+	console.log("Finished indexing clients!");
 });
 
 ts.on('update', async () => {
@@ -114,7 +129,7 @@ fastify.register(require('fastify-static'), {
 	root: path.join(__dirname, 'public'),
 });
 
-ts.login().then(() => {
+ts.login().then(ts.indexClients).then(() => {
 	fastify.listen(process.env.TSVPORT || 5000, process.env.TSVHOST || "0.0.0.0", err => {
 		if (err) {
 			console.error(err);
@@ -122,4 +137,4 @@ ts.login().then(() => {
 		}
 		console.log(`Listen on ${process.env.TSVHOST || "0.0.0.0"}:${process.env.TSVPORT || 5000}`);
 	});
-});
+}).catch(console.error);
