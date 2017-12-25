@@ -70,37 +70,11 @@ class TSLib extends EventEmitter{
 			}).save();
 			const isOnline = await this.isClientOnline({uid: user['uid']});
 			user['online'] = isOnline !== false;
+			let newU = user;
 			if (isOnline !== false) {
-				try {
-					const currentData = await this.getOnlineClientInfo(isOnline);
-					if (currentData.hasOwnProperty('client_country')) user['country'] = currentData['client_country'];
-					if (currentData.hasOwnProperty('client_icon_id')) {
-						let signedInt = parseInt(currentData['client_icon_id']);
-						let unsignedInt;
-						if (Math.sign(signedInt) === -1) {
-							signedInt = signedInt * -1;
-							unsignedInt = 4294967296 - signedInt;
-						} else {
-							unsignedInt = signedInt;
-						}
-						user['iconID'] = JSON.stringify(unsignedInt);
-					}
-					if (currentData.hasOwnProperty('client_away')) user['away'] = currentData['client_away'] === '1';
-					if (currentData.hasOwnProperty('client_platform')) user['platform'] = currentData['client_platform'];
-					if (currentData.hasOwnProperty('client_version')) user['version'] = currentData['client_version'];
-					user['muted'] = {
-						input: false,
-						output: false
-					};
-					if (currentData.hasOwnProperty('client_output_muted')) user['muted']['output'] = currentData['client_output_muted'] === '1';
-					if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
-					if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
-					if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
-					if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
-				} catch (e) {
-				}
+				newU = await this.applyOnlinePatch(user, isOnline);
 			}
-			return await user.save();
+			return await newU.save();
 		}
 	}
 
@@ -126,37 +100,82 @@ class TSLib extends EventEmitter{
 		user['lastUpdate'] = new Date();
 		const isOnline = await this.isClientOnline({uid: user['uid']});
 		user['online'] = isOnline !== false;
+		let newU = user;
 		if (isOnline !== false) {
-			try {
-				const currentData = await this.getOnlineClientInfo(isOnline);
-				if (currentData.hasOwnProperty('client_country')) user['country'] = currentData['client_country'];
-				if (currentData.hasOwnProperty('client_icon_id')) {
-					let signedInt = parseInt(currentData['client_icon_id']);
-					let unsignedInt;
-					if (Math.sign(signedInt) === -1) {
-						signedInt = signedInt * -1;
-						unsignedInt = 4294967296 - signedInt;
-					} else {
-						unsignedInt = signedInt;
-					}
-					user['iconID'] = JSON.stringify(unsignedInt);
+			newU = await this.applyOnlinePatch(user, isOnline);
+		}
+		newU = await this.applyGroupPatch(newU);
+		return await newU.save();
+	}
+
+	async applyOnlinePatch(to, withID) {
+		let user = to;
+		try {
+			const currentData = await this.getOnlineClientInfo(withID);
+			if (currentData.hasOwnProperty('client_country')) user['country'] = currentData['client_country'];
+			if (currentData.hasOwnProperty('client_icon_id')) {
+				let signedInt = parseInt(currentData['client_icon_id']);
+				let unsignedInt;
+				if (Math.sign(signedInt) === -1) {
+					signedInt = signedInt * -1;
+					unsignedInt = 4294967296 - signedInt;
+				} else {
+					unsignedInt = signedInt;
 				}
-				if (currentData.hasOwnProperty('client_away')) user['away'] = currentData['client_away'] === '1';
-				if (currentData.hasOwnProperty('client_platform')) user['platform'] = currentData['client_platform'];
-				if (currentData.hasOwnProperty('client_version')) user['version'] = currentData['client_version'];
-				user['muted'] = {
-					input: false,
-					output: false
-				};
-				if (currentData.hasOwnProperty('client_output_muted')) user['muted']['output'] = currentData['client_output_muted'] === '1';
-				if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
-				if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
-				if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
-				if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
-			} catch (e) {
+				user['iconID'] = JSON.stringify(unsignedInt);
+			}
+			if (currentData.hasOwnProperty('client_away')) user['away'] = currentData['client_away'] === '1';
+			if (currentData.hasOwnProperty('client_platform')) user['platform'] = currentData['client_platform'];
+			if (currentData.hasOwnProperty('client_version')) user['version'] = currentData['client_version'];
+			user['muted'] = {
+				input: false,
+				output: false
+			};
+			if (currentData.hasOwnProperty('client_output_muted')) user['muted']['output'] = currentData['client_output_muted'] === '1';
+			if (currentData.hasOwnProperty('client_input_muted')) user['muted']['input'] = currentData['client_input_muted'] === '1';
+			if (currentData.hasOwnProperty('client_is_recording')) user['recording'] = currentData['client_is_recording'] === '1';
+			if (currentData.hasOwnProperty('client_is_channel_commander')) user['channelCommander'] = currentData['client_is_channel_commander'] === '1';
+			if (currentData.hasOwnProperty('client_nickname')) user['nickname'] = currentData['client_nickname'];
+		} catch (e) {
+		}
+		return user;
+	}
+
+	async applyGroupPatch(to) {
+		let user = to;
+		try {
+			const groups = await this.getGroups({dbid: user['dbid']});
+			user['groups'] = groups;
+		} catch (e) {}
+		return user;
+	}
+
+	async getGroups({dbid, uid}) {
+		if (!dbid && !uid) throw new Error("Please at least one of dbid and uid.");
+		let id = dbid;
+		if (!dbid) {
+			const r = await this.query.send('clientgetdbidfromuid', {cluid: uid});
+			if (!r.hasOwnProperty('cldbid')) throw new Error("Can not find dbid for " + uid);
+			id = r['cldbid'];
+		}
+		const r = await this.query.send('servergroupsbyclientid', {cldbid: id});
+		if (r.hasOwnProperty('id') && r['id']) throw new Error('Error with id ' + r['id']);
+		let groups = [];
+		if (!Array.isArray(r['sgid'])) {
+			groups.push({
+				name: r['name'],
+				sgid: r['sgid']
+			});
+		} else {
+			for (let index in r['sgid']) {
+				if (!r['sgid'].hasOwnProperty(index)) continue;
+				groups.push({
+					name: r['name'][index],
+					sgid: r['sgid'][index]
+				});
 			}
 		}
-		return await user.save();
+		return groups;
 	}
 
 	async getOnlineClientInfo(id) {
@@ -627,11 +646,6 @@ class TSLib extends EventEmitter{
 				throw new Error(rNotify);
 			}
 		}
-		setInterval(() => {
-			this.query.send('cmd_custom_unknown_command').catch(e => {
-				console.log("PLEASE DON'T LEAVE ME");
-			});
-		}, 2000);
 		if (!this.databaseConnected) {
 			await this.connectDB();
 		}
@@ -796,6 +810,10 @@ class TSLib extends EventEmitter{
 			hasAvatar: {
 				type: Boolean,
 				default: false
+			},
+			groups: {
+				type: Array,
+				default: []
 			}
 		}));
 

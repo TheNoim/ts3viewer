@@ -20,7 +20,7 @@ const ts = new TSLibrary({
 
 
 io.on('connection', socket => {
-	console.log("Socket connection!");
+	console.log("Socket connection ->", socket.conn.remoteAddress);
 });
 
 ts.on('update', async () => {
