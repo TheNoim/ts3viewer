@@ -10,7 +10,7 @@
                     <img v-if="client.hasAvatar" v-img v-bind:src="`/avatar/dbid/${client.dbid}`" class="clientAvatar" :alt="`${client.nickname} avatar`"/>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
-                    <v-list-tile-title>{{client.nickname}}</v-list-tile-title>
+                    <v-list-tile-title>{{groups(client.groups)}} {{client.nickname}}</v-list-tile-title>
                     <v-list-tile-sub-title>
                         <v-tooltip bottom v-if="client.muted.input">
                             <v-icon slot="activator" small>mic_off</v-icon>
@@ -74,6 +74,11 @@
             },
             close() {
                 this.$set(this.$data, 'info', false);
+            },
+            groups(groups) {
+				let x = [];
+                for (let group of groups) x.push(`[${group.name}]`);
+                return x.join(' ');
             }
         },
         components: {ClientDetails}

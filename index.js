@@ -3,6 +3,9 @@ const helmet = require('fastify-helmet');
 const TSLibrary = require('./tsLib');
 const path = require('path');
 const _ = require('lodash');
+const RSS = require('rss');
+const url = require('url');
+const ProgressBar = require('progress');
 
 const io = require('socket.io')(fastify.server);
 
@@ -19,8 +22,22 @@ const ts = new TSLibrary({
 });
 
 
+let bar;
+
 io.on('connection', socket => {
-	console.log("Socket connection!");
+	console.log("Socket connection ->", socket.conn.remoteAddress);
+});
+
+ts.on('indexProgress', ({count, current, lastClient}) => {
+	if (!bar) bar = new ProgressBar('Indexing clients [:bar] :percent :etas ETA Indexed: :last', {total: count});
+	bar.tick(1, {
+		"last": lastClient
+	});
+});
+
+ts.on('indexFinished', () => {
+	bar = null;
+	console.log("Finished indexing clients!");
 });
 
 ts.on('update', async () => {
@@ -36,6 +53,14 @@ ts.on('update', async () => {
 	} else {
 		io.emit('updateYourself');
 	}
+});
+
+ts.on('left', data => {
+	io.emit('left', data);
+});
+
+ts.on('join', data => {
+	io.emit('join', data);
 });
 
 let lastData;
@@ -106,6 +131,53 @@ fastify.get('/icon/:id', async (req, reply) => {
 	}
 });
 
+if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
+	fastify.get('/feed', async (req, reply) => {
+		const feed = new RSS({
+			ttl: 1,
+			pubDate: new Date(),
+			title: process.env.FEEDTITLE,
+			feed_url: process.env.FEEDURL,
+			site_url: process.env.FEEDSITEURL
+		});
+		const logs = await ts.Log.find({}).sort({date: 'asc'}).limit(500).exec();
+		const u = url.parse(process.env.FEEDURL);
+		for (let log of logs) {
+			const user = await ts.getUser({uid: log.meta.uid});
+			let meta;
+			if (user['hasAvatar']) {
+				meta = await new Promise((resolve, reject) => {
+					ts.gfs.files.find({filename: `/0/avatar_${user['avatarID']}`}).toArray((err, files) => {
+						if (err) return reject(err);
+						resolve(files[0]);
+					});
+				});
+			}
+			console.log(meta);
+			feed.item({
+				title: log.message,
+				description: `${user['nickname']} already joined ${user['connections']} times.`,
+				guid: log._id,
+				date: log.date,
+				url: `${u.protocol}//${u.hostname}:${u.port || (u.protocol === 'https:' ? 443 : 80)}/user/uid/${log.meta.uid}`,
+				enclosure: {
+					url: user['hasAvatar'] ? `${u.protocol}//${u.hostname}:${u.port || (u.protocol === 'https:' ? 443 : 80)}/avatar/dbid/${user['dbid']}` : undefined,
+					type: meta && meta.hasOwnProperty('contentType') ? meta['contentType'] : undefined,
+					size: meta && meta.hasOwnProperty('length') ? meta['length'] : undefined,
+				},
+				custom_elements: [
+					{'dbid': user['dbid']},
+					{'country': user['country']},
+					{'uid': user['uid']},
+					{'nickname': user['nickname']}
+				]
+			});
+		}
+		reply.type('application/rss+xml');
+		return feed.xml();
+	});
+}
+
 fastify.get('/channelTree', async (req, reply) => {
 	return await ts.getChannelTree();
 });
@@ -114,7 +186,7 @@ fastify.register(require('fastify-static'), {
 	root: path.join(__dirname, 'public'),
 });
 
-ts.login().then(() => {
+ts.login().then(ts.indexClients).then(() => {
 	fastify.listen(process.env.TSVPORT || 5000, process.env.TSVHOST || "0.0.0.0", err => {
 		if (err) {
 			console.error(err);
@@ -122,4 +194,4 @@ ts.login().then(() => {
 		}
 		console.log(`Listen on ${process.env.TSVHOST || "0.0.0.0"}:${process.env.TSVPORT || 5000}`);
 	});
-});
+}).catch(console.error);
