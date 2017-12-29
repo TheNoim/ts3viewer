@@ -55,6 +55,14 @@ ts.on('update', async () => {
 	}
 });
 
+ts.on('left', data => {
+	io.emit('left', data);
+});
+
+ts.on('join', data => {
+	io.emit('join', data);
+});
+
 let lastData;
 
 async function refreshData() {

@@ -681,7 +681,6 @@ class TSLib extends EventEmitter{
 				lastActiveID: data['clid']
 			}).exec();
 			if (user) {
-				console.log(`${user['nickname']} left the server`);
 				await this.Log({
 					message: `${user['nickname']} left the server`,
 					meta: {
@@ -691,6 +690,7 @@ class TSLib extends EventEmitter{
 				}).save();
 				user['lastActiveID'] = null;
 				await user.save();
+				this.emit('left', user);
 			} else {
 				console.log("Unknown user left the server. I will ignore this :)");
 			}
@@ -733,7 +733,7 @@ class TSLib extends EventEmitter{
 								event: 'joined'
 							}
 						}).save();
-						console.log(`${user['nickname']} joined the server`)
+						this.emit('join', user);
 					}
 					if (data.hasOwnProperty('clid')) {
 						return await this.updateUser({dbid: data['client_database_id']}, data['clid']);
@@ -761,7 +761,7 @@ class TSLib extends EventEmitter{
 								event: 'joined'
 							}
 						}).save();
-						console.log(`${user['nickname']} joined the server`)
+						this.emit('join', user);
 					}
 					if (data.hasOwnProperty('clid')) {
 						return await this.updateUser({uid: r['client_unique_identifier']}, data['clid']);
