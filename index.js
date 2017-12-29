@@ -148,7 +148,7 @@ if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 			console.log(meta);
 			feed.item({
 				title: log.message,
-				description: `Event type: ${log.meta.event} for uid ${log.meta.uid}`,
+				description: `${user['nickname']} already joined ${user['connections']} times.`,
 				guid: log._id,
 				date: log.date,
 				url: `${u.protocol}//${u.hostname}:${u.port || (u.protocol === 'https:' ? 443 : 80)}/user/uid/${log.meta.uid}`,
@@ -156,7 +156,10 @@ if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 					url: user['hasAvatar'] ? `${u.protocol}//${u.hostname}:${u.port || (u.protocol === 'https:' ? 443 : 80)}/avatar/dbid/${user['dbid']}` : undefined,
 					type: meta && meta.hasOwnProperty('contentType') ? meta['contentType'] : undefined,
 					size: meta && meta.hasOwnProperty('length') ? meta['length'] : undefined,
-				}
+				},
+				custom_elements: [
+					{'user': JSON.stringify(user)}
+				]
 			});
 		}
 		reply.type('application/rss+xml');
