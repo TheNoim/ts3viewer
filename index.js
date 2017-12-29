@@ -6,6 +6,8 @@ const _ = require('lodash');
 const RSS = require('rss');
 const url = require('url');
 const ProgressBar = require('progress');
+//const telegram = require('./telegram');
+const telegraf = require('./telegraf');
 
 const io = require('socket.io')(fastify.server);
 
@@ -62,6 +64,9 @@ ts.on('left', data => {
 ts.on('join', data => {
 	io.emit('join', data);
 });
+
+///telegram(ts);
+telegraf(ts, fastify);
 
 let lastData;
 

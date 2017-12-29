@@ -910,6 +910,22 @@ class TSLib extends EventEmitter{
 			meta: Object
 		}));
 
+		this.Chat = this.mongoose.model('Chat', this.mongoose.Schema({
+			date: {
+				type: Date,
+				default: () => new Date()
+			},
+			chatID: {
+				type: String,
+				unique : true,
+				required : true
+			},
+			sendFeed: {
+				type: Boolean,
+				default: true
+			}
+		}));
+
 	}
 
 	async indexClients() {
