@@ -154,7 +154,7 @@ module.exports = (ts, fastify) => {
 	});
 
 
-	if (process.env.NODE_ENV === 'production') {
+	if (process.env.NODE_ENV === 'production' && !process.env.TELEGRAMPOLLING) {
 		fastify.use(bot.webhookCallback(pathname));
 		bot.telegram.setWebhook(webhook);
 
