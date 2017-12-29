@@ -3,6 +3,8 @@ const helmet = require('fastify-helmet');
 const TSLibrary = require('./tsLib');
 const path = require('path');
 const _ = require('lodash');
+const RSS = require('rss');
+const url = require('url');
 const ProgressBar = require('progress');
 
 const io = require('socket.io')(fastify.server);
@@ -120,6 +122,42 @@ fastify.get('/icon/:id', async (req, reply) => {
 		reply.code(404).send('Sorry');
 	}
 });
+
+if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
+	fastify.get('/feed', async (req, reply) => {
+		const feed = new RSS({
+			ttl: 1,
+			pubDate: new Date(),
+			title: process.env.FEEDTITLE,
+			feed_url: process.env.FEEDURL,
+			site_url: process.env.FEEDSITEURL
+		});
+		const logs = await ts.Log.find({}).sort({date: 'desc'}).limit(500).exec();
+		const u = url.parse(process.env.FEEDURL);
+		for (let log of logs) {
+			const user = await ts.getUser({uid: log.meta.uid});
+			let meta;
+			if (user['hasAvatar']) {
+				meta = await new Promise((resolve, reject) => {
+					ts.gfs.files.find({filename: `/avatar_${user['avatarID']}`}).toArray((err, files) => {
+						if (err) return reject(err);
+						resolve(files[0]);
+					});
+				});
+			}
+			feed.item({
+				title: log.message,
+				description: `Event type: ${log.meta.event} for uid ${log.meta.uid}`,
+				guid: log._id,
+				date: log.date,
+				url: user['hasAvatar'] ? `${u.protocol}//${u.hostname}:${u.port}/avatar/dbid/${user['dbid']}` : `${u.protocol}//${u.hostname}:${u.port}/user/uid/${log.meta.uid}`,
+				type: meta && meta.hasOwnProperty('contentType') ? meta['contentType'] : 'application/json'
+			});
+		}
+		reply.type('application/rss+xml');
+		return feed.xml();
+	});
+}
 
 fastify.get('/channelTree', async (req, reply) => {
 	return await ts.getChannelTree();

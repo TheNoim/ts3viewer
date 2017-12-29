@@ -80,7 +80,7 @@ class TSLib extends EventEmitter{
 		}
 	}
 
-	async updateUser(param) {
+	async updateUser(param, lastActiveID) {
 		const user = await this.getUser(param);
 		const r = await this.query.send('clientdbinfo', {cldbid: user['dbid']});
 		if (r['id']) throw new Error(`Can not find client with id ${id}.`);
@@ -102,6 +102,7 @@ class TSLib extends EventEmitter{
 		user['lastUpdate'] = new Date();
 		const isOnline = await this.isClientOnline({uid: user['uid']});
 		user['online'] = isOnline !== false;
+		if (lastActiveID) user['lastActiveID'] = lastActiveID;
 		let newU = user;
 		if (isOnline !== false) {
 			newU = await this.applyOnlinePatch(user, isOnline);
@@ -660,11 +661,10 @@ class TSLib extends EventEmitter{
 
 	_registerEvents() {
 		if (this.loggedIn) {
-			this.query.on('cliententerview', this._clientEventUpdate.bind(this));
-			this.query.on('clientleftview', data => {
-				console.log(data);
-				this.emit('update');
+			this.query.on('cliententerview', data => {
+				this._clientEventUpdate.bind(this)(data, true);
 			});
+			this.query.on('clientleftview', this._clientLeft.bind(this));
 			this.query.on('clientmoved', this._clientEventUpdate.bind(this));
 			this.query.on('channeledited', this._channelEventUpdate.bind(this));
 			this.query.on('channelcreated', this._channelEventUpdate.bind(this));
@@ -673,6 +673,30 @@ class TSLib extends EventEmitter{
 			this.query.on('channeldescriptionchanged', this._channelEventUpdate.bind(this));
 			this.query.on('channeldeleted', this._deleteChannel.bind(this));
 		}
+	}
+
+	async _clientLeft(data) {
+		await this.queue.add(async () => {
+			const user = await this.User.findOne({
+				lastActiveID: data['clid']
+			}).exec();
+			if (user) {
+				console.log(`${user['nickname']} left the server`);
+				await this.Log({
+					message: `${user['nickname']} left the server`,
+					meta: {
+						uid: user['uid'],
+						event: 'left'
+					}
+				}).save();
+				user['lastActiveID'] = null;
+				await user.save();
+			} else {
+				console.log("Unknown user left the server. I will ignore this :)");
+			}
+			return true;
+		});
+		this.emit('update');
 	}
 
 	_deleteChannel(data) {
@@ -695,12 +719,27 @@ class TSLib extends EventEmitter{
 		}
 	}
 
-	async _clientEventUpdate(data) {
+	async _clientEventUpdate(data, joined) {
 		console.log(data);
 		if (data.hasOwnProperty('client_database_id') && data.hasOwnProperty('client_type') && data['client_type'] === '0') {
 			try {
-				await this.queue.add(() => {
-					return this.updateUser({dbid: data['client_database_id']});
+				await this.queue.add(async () => {
+					const user = await this.getUser({dbid: data['client_database_id']});
+					if (!user['lastActiveID'] && joined) {
+						await this.Log({
+							message: `${user['nickname']} joined the server`,
+							meta: {
+								uid: user['uid'],
+								event: 'joined'
+							}
+						}).save();
+						console.log(`${user['nickname']} joined the server`)
+					}
+					if (data.hasOwnProperty('clid')) {
+						return await this.updateUser({dbid: data['client_database_id']}, data['clid']);
+					} else {
+						return await this.updateUser({dbid: data['client_database_id']});
+					}
 				});
 				console.log(`Client with ID ${data['client_database_id']} updated!`);
 				this.emit('update');
@@ -710,10 +749,25 @@ class TSLib extends EventEmitter{
 			}
 		} else if (data.hasOwnProperty('clid')) {
 			try {
-				await this.queue.add(async () => {
+				const user = await this.queue.add(async () => {
 					const r = await this.query.send('clientinfo', {clid: data['clid']});
 					if (!r.hasOwnProperty('client_unique_identifier')) throw new Error(`Failed to execute query. ${JSON.stringify(r)}`);
-					return await this.updateUser({uid: r['client_unique_identifier']});
+					const user = await this.getUser({uid: r['client_unique_identifier']});
+					if (!user['lastActiveID'] && joined) {
+						await this.Log({
+							message: `${user['nickname']} joined the server`,
+							meta: {
+								uid: user['uid'],
+								event: 'joined'
+							}
+						}).save();
+						console.log(`${user['nickname']} joined the server`)
+					}
+					if (data.hasOwnProperty('clid')) {
+						return await this.updateUser({uid: r['client_unique_identifier']}, data['clid']);
+					} else {
+						return await this.updateUser({uid: r['client_unique_identifier']});
+					}
 				});
 				console.log(`Client with active ID ${data['clid']} updated!`);
 				this.emit('update');
@@ -816,6 +870,9 @@ class TSLib extends EventEmitter{
 			groups: {
 				type: Array,
 				default: []
+			},
+			lastActiveID: {
+				type: String
 			}
 		}));
 
@@ -842,6 +899,17 @@ class TSLib extends EventEmitter{
 			secure: Boolean,
 			lastUpdate: Date
 		}));
+
+		this.Log = this.mongoose.model('Log', this.mongoose.Schema({
+			date: {
+				type: Date,
+				default: () => new Date(),
+				index: true
+			},
+			message: String,
+			meta: Object
+		}));
+
 	}
 
 	async indexClients() {
