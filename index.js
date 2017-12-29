@@ -132,7 +132,7 @@ if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 			feed_url: process.env.FEEDURL,
 			site_url: process.env.FEEDSITEURL
 		});
-		const logs = await ts.Log.find({}).sort({date: 'desc'}).limit(500).exec();
+		const logs = await ts.Log.find({}).sort({date: 'asc'}).limit(500).exec();
 		const u = url.parse(process.env.FEEDURL);
 		for (let log of logs) {
 			const user = await ts.getUser({uid: log.meta.uid});
