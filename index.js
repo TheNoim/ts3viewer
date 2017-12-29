@@ -158,10 +158,10 @@ if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 					size: meta && meta.hasOwnProperty('length') ? meta['length'] : undefined,
 				},
 				custom_elements: [
-					{'user:dbid': user['dbid']},
-					{'user:country': user['country']},
-					{'user:uid': user['uid']},
-					{'user:nickname': user['nickname']}
+					{'dbid': user['dbid']},
+					{'country': user['country']},
+					{'uid': user['uid']},
+					{'nickname': user['nickname']}
 				]
 			});
 		}
