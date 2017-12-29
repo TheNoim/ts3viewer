@@ -66,7 +66,6 @@ ts.on('join', data => {
 });
 
 ///telegram(ts);
-telegraf(ts, fastify);
 
 fastify.get('/avatar/:type/:id', async (req, reply) => {
 	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
@@ -191,6 +190,8 @@ ts.login().then(ts.indexClients).then(() => {
 	}
 
 	setTimeout(refreshData, 500);
+
+	telegraf(ts, fastify);
 
 	fastify.listen(process.env.TSVPORT || 5000, process.env.TSVHOST || "0.0.0.0", err => {
 		if (err) {
