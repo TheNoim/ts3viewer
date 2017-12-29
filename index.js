@@ -139,19 +139,24 @@ if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 			let meta;
 			if (user['hasAvatar']) {
 				meta = await new Promise((resolve, reject) => {
-					ts.gfs.files.find({filename: `/avatar_${user['avatarID']}`}).toArray((err, files) => {
+					ts.gfs.files.find({filename: `/0/avatar_${user['avatarID']}`}).toArray((err, files) => {
 						if (err) return reject(err);
 						resolve(files[0]);
 					});
 				});
 			}
+			console.log(meta);
 			feed.item({
 				title: log.message,
 				description: `Event type: ${log.meta.event} for uid ${log.meta.uid}`,
 				guid: log._id,
 				date: log.date,
-				url: user['hasAvatar'] ? `${u.protocol}//${u.hostname}:${u.port}/avatar/dbid/${user['dbid']}` : `${u.protocol}//${u.hostname}:${u.port}/user/uid/${log.meta.uid}`,
-				type: meta && meta.hasOwnProperty('contentType') ? meta['contentType'] : 'application/json'
+				url: `${u.protocol}//${u.hostname}:${u.port}/user/uid/${log.meta.uid}`,
+				enclosure: {
+					url: user['hasAvatar'] ? `${u.protocol}//${u.hostname}:${u.port}/avatar/dbid/${user['dbid']}` : undefined,
+					type: meta && meta.hasOwnProperty('contentType') ? meta['contentType'] : undefined,
+					size: meta && meta.hasOwnProperty('length') ? meta['length'] : undefined,
+				}
 			});
 		}
 		reply.type('application/rss+xml');
