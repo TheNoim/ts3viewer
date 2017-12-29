@@ -68,26 +68,6 @@ ts.on('join', data => {
 ///telegram(ts);
 telegraf(ts, fastify);
 
-let lastData;
-
-async function refreshData() {
-	let newData;
-	try {
-		newData = await ts.getChannelTree();
-	} catch(e) {
-		console.error(e);
-		setTimeout(refreshData, 500);
-	}
-
-	if (!_.isEqual(newData, lastData)) {
-		lastData = newData;
-		io.emit('update', newData);
-	}
-	setTimeout(refreshData, 500);
-}
-
-setTimeout(refreshData, 500);
-
 fastify.get('/avatar/:type/:id', async (req, reply) => {
 	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
 		try {
@@ -192,6 +172,26 @@ fastify.register(require('fastify-static'), {
 });
 
 ts.login().then(ts.indexClients).then(() => {
+	let lastData;
+
+	async function refreshData() {
+		let newData;
+		try {
+			newData = await ts.getChannelTree();
+		} catch(e) {
+			console.error(e);
+			setTimeout(refreshData, 500);
+		}
+
+		if (!_.isEqual(newData, lastData)) {
+			lastData = newData;
+			io.emit('update', newData);
+		}
+		setTimeout(refreshData, 500);
+	}
+
+	setTimeout(refreshData, 500);
+
 	fastify.listen(process.env.TSVPORT || 5000, process.env.TSVHOST || "0.0.0.0", err => {
 		if (err) {
 			console.error(err);

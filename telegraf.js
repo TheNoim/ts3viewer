@@ -157,12 +157,12 @@ module.exports = (ts, fastify) => {
 	if (process.env.NODE_ENV === 'production' && !process.env.TELEGRAMPOLLING) {
 		fastify.use(bot.webhookCallback(pathname));
 		bot.telegram.setWebhook(webhook);
-
 		console.log("Start telegram bot with webhook url: ", webhook);
 	} else {
-		bot.startPolling();
-
-		console.log("Start telegram bot with polling.");
+		bot.telegram.deleteWebhook().then(() => {
+			bot.startPolling();
+			console.log("Start telegram bot with polling.");
+		});
 	}
 
 };
