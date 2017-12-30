@@ -806,7 +806,7 @@ class TSLib extends EventEmitter{
 		this.db.on('disconnecting', () => {
 			this.databaseConnected = false;
 		});
-		this.db.on('error', console.error.bind(console, 'connection error:'));
+		this.db.on('error', console.error);
 	}
 
 	_generateDBModels() {
