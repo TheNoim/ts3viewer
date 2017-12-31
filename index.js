@@ -23,6 +23,7 @@ const ts = new TSLibrary({
 	cache: process.env.TSVCACHE || 1000 * 120
 });
 
+const refreshTime = process.env.TSPOLLINGTIME ? parseInt(process.env.TSPOLLINGTIME) : 500;
 
 let bar;
 
@@ -65,40 +66,23 @@ ts.on('join', data => {
 	io.emit('join', data);
 });
 
-///telegram(ts);
-
-fastify.get('/avatar/:type/:id', async (req, reply) => {
-	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
-		try {
-			const {meta, stream} = await ts.streamAvatarFrom(req.params['type'] === 'uid' ? {uid: req.params['id']} : {dbid: req.params['id']});
-			if (meta) {
-				reply.type(meta['contentType']).send(stream);
-			} else {
-				reply.send(stream);
-			}
-		} catch (e) {
-			reply.code(500).send(e);
-		}
-	} else {
-		reply.code(404).send('Sorry');
-	}
-});
-
-
-fastify.get('/user/:type/:id', async (req, reply) => {
-	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
-		const user = await ts.updateUser(req.params['type'] === 'uid' ? {uid: req.params['id']} : {dbid: req.params['id']});
-		reply.send(JSON.parse(JSON.stringify(user)));
-	} else {
-		reply.code(404).send('Sorry');
-	}
-});
-
-fastify.get('/user/', async (req, reply) => {
+async function online() {
 	return await ts.getOnlineClients();
-});
+}
 
-fastify.get('/icon/:id', async (req, reply) => {
+async function users() {
+	return await ts.User.find({}).exec();
+}
+
+async function channel(req, reply) {
+	if (req.params['id']) {
+		return await ts.getChannelAndUpdateIfRequired(req.params['id']);
+	} else {
+		reply.code(404).send('Sorry');
+	}
+}
+
+async function icon(req, reply) {
 	if (req.params['id']) {
 		try {
 			const {meta, stream} = await ts.streamIcon({id: req.params['id']});
@@ -113,10 +97,60 @@ fastify.get('/icon/:id', async (req, reply) => {
 	} else {
 		reply.code(404).send('Sorry');
 	}
-});
+}
+
+async function avatar(req, reply) {
+	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
+		try {
+			const {meta, stream} = await ts.streamAvatarFrom(req.params['type'] === 'uid' ? {uid: req.params['id']} : {dbid: req.params['id']});
+			if (meta) {
+				reply.type(meta['contentType']).send(stream);
+			} else {
+				reply.send(stream);
+			}
+		} catch (e) {
+			reply.code(500).send(e);
+		}
+	} else {
+		reply.code(404).send('Sorry');
+	}
+}
+
+async function user(req, reply) {
+	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
+		const user = await ts.updateUser(req.params['type'] === 'uid' ? {uid: req.params['id']} : {dbid: req.params['id']});
+		reply.send(JSON.parse(JSON.stringify(user)));
+	} else {
+		reply.code(404).send('Sorry');
+	}
+}
+
+async function channelTree() {
+	return await ts.getChannelTree();
+}
+
+fastify.get('/avatar/:type/:id', avatar);
+
+fastify.get('/user/:type/:id', user);
+
+fastify.get('/user/', online);
+
+fastify.get('/user', online);
+
+fastify.get('/online', online);
+
+fastify.get('/online/', online);
+
+fastify.get('/users', users);
+
+fastify.get('/users/', users);
+
+fastify.get('/channel/:id', channel);
+
+fastify.get('/icon/:id', icon);
 
 if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
-	fastify.get('/feed', async (req, reply) => {
+	async function feed(req, reply) {
 		const feed = new RSS({
 			ttl: 1,
 			pubDate: new Date(),
@@ -159,12 +193,12 @@ if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 		}
 		reply.type('application/rss+xml');
 		return feed.xml();
-	});
+	}
+
+	fastify.get('/feed', feed);
 }
 
-fastify.get('/channelTree', async (req, reply) => {
-	return await ts.getChannelTree();
-});
+fastify.get('/channelTree', channelTree);
 
 fastify.register(require('fastify-static'), {
 	root: path.join(__dirname, 'public'),
@@ -179,17 +213,17 @@ ts.login().then(ts.indexClients).then(() => {
 			newData = await ts.getChannelTree();
 		} catch(e) {
 			console.error(e);
-			setTimeout(refreshData, 500);
+			setTimeout(refreshData, refreshTime);
 		}
 
 		if (!_.isEqual(newData, lastData)) {
 			lastData = newData;
 			io.emit('update', newData);
 		}
-		setTimeout(refreshData, 500);
+		setTimeout(refreshData, refreshTime);
 	}
 
-	setTimeout(refreshData, 500);
+	setTimeout(refreshData, refreshTime);
 
 	telegraf(ts, fastify);
 
