@@ -18,3 +18,5 @@ public/
 
 
 src/settings.js
+
+.env
