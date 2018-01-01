@@ -1,6 +1,8 @@
 const fs = require('fs');
 const packageJSON = require('./package');
 
+require('dotenv').config();
+
 const settings = {
 	darkMode: process.env.TSVDARKMODE === 'true' || process.env.TSVDARKMODE === true,
 	bbCode: process.env.TSVBBCODE === 'true' || process.env.TSVDARKMODE === true,

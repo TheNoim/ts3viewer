@@ -7,6 +7,7 @@
     "axios": "^0.17.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "dotenv": "^4.0.0",
     "fastify": "^0.36.0",
     "fastify-helmet": "^1.0.2",
     "fastify-static": "^0.5.0",

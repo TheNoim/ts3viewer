@@ -6,8 +6,9 @@ const _ = require('lodash');
 const RSS = require('rss');
 const url = require('url');
 const ProgressBar = require('progress');
-//const telegram = require('./telegram');
 const telegraf = require('./telegraf');
+
+require('dotenv').config();
 
 const io = require('socket.io')(fastify.server);
 
