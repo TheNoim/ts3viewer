@@ -72,7 +72,8 @@ module.exports = (ts, fastify) => {
 					groups.push('\[' + group['name'] + '\]');
 				}
 				const groupString = groups.join('');
-				usernames.push(`${groupString} ${user['nickname']} \(${user['dbid']}\)`);
+				uri.pathname = `/info/user/?dbid=${user['dbid']}`;
+				usernames.push(`${groupString} <a href="${url.format(uri)}">${user['nickname']}</a>`);
 			}
 			const finalString = `${string}${usernames.join('\n')}`;
 			await bot.telegram.editMessageText(chatID, message.message_id, undefined, finalString, {parse_mode: 'HTML'});
@@ -110,7 +111,8 @@ module.exports = (ts, fastify) => {
 					groups.push('\[' + group['name'] + '\]');
 				}
 				const groupString = groups.join('');
-				usernames.push(`${groupString} ${user['nickname']} \(${user['dbid']}\)`);
+				uri.pathname = `/info/user/?dbid=${user['dbid']}`;
+				usernames.push(`${groupString} <a href="${url.format(uri)}">${user['nickname']}</a>`);
 			}
 			string += usernames.join('\n');
 			string += '\n<b>===========================</b>\n';
@@ -127,7 +129,8 @@ module.exports = (ts, fastify) => {
 		const chats = await ts.Chat.find({}).exec();
 		if (!chats) return;
 		for (let chat of chats) {
-			const message = await bot.telegram.sendMessage(chat.chatID, `***${user['nickname']}*** joined the server.`, {parse_mode: "Markdown"});
+			uri.pathname = `/info/user/?dbid=${user['dbid']}`;
+			const message = await bot.telegram.sendMessage(chat.chatID, `***(${user['nickname']})[${url.format(uri)}]*** joined the server.`, {parse_mode: "Markdown"});
 			if (user['hasAvatar']) {
 				const u = url.parse(process.env.TELEGRAMBASEURL);
 				u.pathname = `/avatar/dbid/${user['dbid']}`;
@@ -142,7 +145,8 @@ module.exports = (ts, fastify) => {
 		const chats = await ts.Chat.find({}).exec();
 		if (!chats) return;
 		for (let chat of chats) {
-			const message = await bot.telegram.sendMessage(chat.chatID, `***${user['nickname']}*** left the server.`, {parse_mode: "Markdown"});
+			uri.pathname = `/info/user/?dbid=${user['dbid']}`;
+			const message = await bot.telegram.sendMessage(chat.chatID, `***(${user['nickname']})[${url.format(uri)}]*** left the server.`, {parse_mode: "Markdown"});
 			if (user['hasAvatar']) {
 				const u = url.parse(process.env.TELEGRAMBASEURL);
 				u.pathname = `/avatar/dbid/${user['dbid']}`;
