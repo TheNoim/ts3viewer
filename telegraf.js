@@ -73,7 +73,7 @@ module.exports = (ts, fastify) => {
 				}
 				const groupString = groups.join('');
 				uri.pathname = `/info/user/`;
-				uri.query = `dbid=${user['dbid']}`;
+				uri.query = {dbid: user['dbid']};
 				usernames.push(`${groupString} <a href="${url.format(uri)}">${user['nickname']}</a>`);
 			}
 			const finalString = `${string}${usernames.join('\n')}`;
@@ -113,7 +113,7 @@ module.exports = (ts, fastify) => {
 				}
 				const groupString = groups.join('');
 				uri.pathname = `/info/user/`;
-				uri.query = `dbid=${user['dbid']}`;
+				uri.query = {dbid: user['dbid']};
 				usernames.push(`${groupString} <a href="${url.format(uri)}">${user['nickname']}</a>`);
 			}
 			string += usernames.join('\n');
@@ -132,7 +132,7 @@ module.exports = (ts, fastify) => {
 		if (!chats) return;
 		for (let chat of chats) {
 			uri.pathname = `/info/user/`;
-			uri.query = `dbid=${user['dbid']}`;
+			uri.query = {dbid: user['dbid']};
 			const message = await bot.telegram.sendMessage(chat.chatID, `***(${user['nickname']})[${url.format(uri)}]*** joined the server.`, {parse_mode: "Markdown"});
 			if (user['hasAvatar']) {
 				const u = url.parse(process.env.TELEGRAMBASEURL);
@@ -149,7 +149,7 @@ module.exports = (ts, fastify) => {
 		if (!chats) return;
 		for (let chat of chats) {
 			uri.pathname = `/info/user/`;
-			uri.query = `dbid=${user['dbid']}`;
+			uri.query = {dbid: user['dbid']};
 			const message = await bot.telegram.sendMessage(chat.chatID, `***(${user['nickname']})[${url.format(uri)}]*** left the server.`, {parse_mode: "Markdown"});
 			if (user['hasAvatar']) {
 				const u = url.parse(process.env.TELEGRAMBASEURL);
