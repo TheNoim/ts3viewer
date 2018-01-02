@@ -133,13 +133,16 @@ module.exports = (ts, fastify) => {
 		for (let chat of chats) {
 			uri.pathname = `/info/user/`;
 			uri.query = {dbid: user['dbid']};
-			const message = await bot.telegram.sendMessage(chat.chatID, `***(${user['nickname']})[${url.format(uri)}]*** joined the server.`, {parse_mode: "Markdown"});
+			//const message = await bot.telegram.sendMessage(chat.chatID, `[${user['nickname']}](${url.format(uri)}) joined the server.`, {parse_mode: "Markdown"});
 			if (user['hasAvatar']) {
 				const u = url.parse(process.env.TELEGRAMBASEURL);
 				u.pathname = `/avatar/dbid/${user['dbid']}`;
 				await bot.telegram.sendPhoto(chat.chatID, url.format(u), {
-					reply_to_message_id: message.message_id
+					caption: `${user['nickname']} joined the server. ${url.format(uri)}`,
+					parse_mode: "Markdown"
 				});
+			} else {
+				await bot.telegram.sendMessage(chat.chatID, `[${user['nickname']}](${url.format(uri)}) joined the server.`, {parse_mode: "Markdown"});
 			}
 		}
 	});
@@ -150,13 +153,16 @@ module.exports = (ts, fastify) => {
 		for (let chat of chats) {
 			uri.pathname = `/info/user/`;
 			uri.query = {dbid: user['dbid']};
-			const message = await bot.telegram.sendMessage(chat.chatID, `***(${user['nickname']})[${url.format(uri)}]*** left the server.`, {parse_mode: "Markdown"});
+			//const message = await bot.telegram.sendMessage(chat.chatID, `[${user['nickname']}](${url.format(uri)}) left the server.`, {parse_mode: "Markdown"});
 			if (user['hasAvatar']) {
 				const u = url.parse(process.env.TELEGRAMBASEURL);
 				u.pathname = `/avatar/dbid/${user['dbid']}`;
 				await bot.telegram.sendPhoto(chat.chatID, url.format(u), {
-					reply_to_message_id: message.message_id
+					caption: `${user['nickname']} left the server. ${url.format(uri)}`,
+					parse_mode: "Markdown"
 				});
+			} else {
+				await bot.telegram.sendMessage(chat.chatID, `[${user['nickname']}](${url.format(uri)}) left the server.`, {parse_mode: "Markdown"});
 			}
 		}
 	});
