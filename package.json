@@ -31,12 +31,15 @@
   },
   "devDependencies": {
     "cross-env": "^5.1.2",
+    "npm-run-all": "^4.1.2",
     "parcel-bundler": "^1.2.1",
     "parcel-plugin-vue": "^1.4.0"
   },
   "scripts": {
     "build": "node generateSettings.js && cross-env NODE_ENV=production parcel build src/index.html -d public/ --public-url ./",
-    "watch": "node generateSettings.js && cross-env NODE_ENV=development parcel watch src/index.html -d public/ --public-url ./",
+    "watchMain": "cross-env NODE_ENV=development parcel watch src/index.html -d public/ --public-url ./",
+    "watchUser": "cross-env NODE_ENV=development parcel watch src/info/user/index.html -d public/info/user/ --public-url /info/user/",
+    "watch": "node generateSettings.js && run-p watchMain watchUser",
     "dockerstartup": "npm run-script build && npm run-script start",
     "start": "cross-env NODE_ENV=production node index.js",
     "docker": "docker build -t 3003/tsviewer . && docker push 3003/tsviewer"

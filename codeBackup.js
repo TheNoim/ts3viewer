@@ -31,8 +31,8 @@
 
 
 
-// async _sUAT(user, dest) {
-// 	const name = `avatar_${user['avatarID']}`;
+// async _sUAT(info, dest) {
+// 	const name = `avatar_${info['avatarID']}`;
 // 	const exists = await new Promise((resolve, reject) => {
 // 		this.gfs.exist({filename: name}, (err, found) => {
 // 			if (err) return reject(err);
@@ -49,9 +49,9 @@
 // 		const lastUpdated = meta['metadata']['lastUpdate'];
 // 		const datetime = new Date(parseInt(meta['metadata']['datetime']) * 1000);
 // 		if (moment(lastUpdated).isSameOrBefore(moment().subtract(this.cache, 'ms'))) {
-// 			const info = await this._getRemoteFileInfo({path: `/avatar_${user['avatarID']}`});
+// 			const user = await this._getRemoteFileInfo({path: `/avatar_${user['avatarID']}`});
 // 			if (!moment(datetime).isSame(moment(new Date(parseInt(info['datetime']) * 1000)))) {
-// 				await this._insertAvatar(name, info['datetime'], user['avatarID']);
+// 				await this._insertAvatar(name, user['datetime'], user['avatarID']);
 // 				const metaData = await new Promise((resolve, reject) => {
 // 					this.gfs.files.find({filename: name}).toArray((err, files) => {
 // 						if (err) return reject(err);
@@ -100,8 +100,8 @@
 // 			}
 // 		}
 // 	} else {
-// 		const info = await this._getRemoteFileInfo({path: `/avatar_${user['avatarID']}`});
-// 		await this._insertAvatar(name, info['datetime'], user['avatarID']);
+// 		const user = await this._getRemoteFileInfo({path: `/avatar_${user['avatarID']}`});
+// 		await this._insertAvatar(name, user['datetime'], user['avatarID']);
 // 		const metaData = await new Promise((resolve, reject) => {
 // 			this.gfs.files.find({filename: name}).toArray((err, files) => {
 // 				if (err) return reject(err);
@@ -116,9 +116,9 @@
 // 	}
 // }
 //
-// async streamUserAvatarTo(user, dest) {
+// async streamUserAvatarTo(info, dest) {
 // 	return await this.queue.add(() => {
-// 		return this._sUAT(user, dest);
+// 		return this._sUAT(info, dest);
 // 	});
 // }
 
