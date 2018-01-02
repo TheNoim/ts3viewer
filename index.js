@@ -7,6 +7,7 @@ const RSS = require('rss');
 const url = require('url');
 const ProgressBar = require('progress');
 const telegraf = require('./telegraf');
+const db = require('mime-db');
 
 require('dotenv').config();
 
@@ -117,6 +118,17 @@ async function avatar(req, reply) {
 	}
 }
 
+async function avatarInfo(req, reply) {
+	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
+		const {meta, stream} = await ts.streamAvatarFrom(req.params['type'] === 'uid' ? {uid: req.params['id']} : {dbid: req.params['id']});
+		if (meta && meta.hasOwnProperty('contentType')) {
+			meta.mimeInfo = db[meta['contentType']];
+		}
+		stream.destroy();
+		return meta;
+	}
+}
+
 async function user(req, reply) {
 	if ((req.params['type'] === 'uid' || req.params['type'] === 'dbid') || !req.params['id']) {
 		const user = await ts.updateUser(req.params['type'] === 'uid' ? {uid: req.params['id']} : {dbid: req.params['id']});
@@ -149,6 +161,8 @@ fastify.get('/users/', users);
 fastify.get('/channel/:id', channel);
 
 fastify.get('/icon/:id', icon);
+
+fastify.get('/avatar/info/:type/:id', avatarInfo);
 
 if (process.env.FEEDURL && process.env.FEEDSITEURL && process.env.FEEDTITLE) {
 	async function feed(req, reply) {

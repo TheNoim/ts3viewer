@@ -6,7 +6,7 @@
             </v-card-title>
             <v-card-text>
                 <v-layout justify-center align-content-center align-center v-if="client.hasAvatar">
-                    <img :tile="true" :src="`/avatar/dbid/${client.dbid}`" v-img :alt="`${client.nickname} avatar`" class="clientAvatar">
+                    <img :tile="true" v-lazy="`/avatar/dbid/${client.dbid}`" v-img :alt="`${client.nickname} avatar`" class="clientAvatar">
                 </v-layout>
                 <v-expansion-panel popout focusable expand>
                     <v-expansion-panel-content lazy ripple v-if="client.description">

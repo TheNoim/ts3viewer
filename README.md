@@ -42,15 +42,10 @@ The xml rss feed. Contains join and left history.
 - yarn or npm (If npm, replace all yarn commands below with npm)
 - MongoDB
 
-### Build
+### Use
 ```bash
 yarn install
-yarn build
-```
-
-### Start
-```bash
-yarn start // you first need to build with yarn build
+yarn dockerstartup
 ```
 
 ### Development

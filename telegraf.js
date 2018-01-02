@@ -26,7 +26,7 @@ module.exports = (ts, fastify) => {
 	const webhook = url.format(uri);
 
 
-	const bot = new Telegraf(process.env.TELEGRAMTOKEN);
+	const bot = new Telegraf(process.env.TELEGRAMTOKEN, { telegram: { webhookReply: false} });
 
 	bot.start(async ctx => {
 		const chatID = ctx.message.chat.id;

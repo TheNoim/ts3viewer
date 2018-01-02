@@ -7,7 +7,7 @@
                         <v-icon color="red" slot="activator" v-if="!client.hasAvatar">face</v-icon>
                         <span>{{client.nickname}} has no Avatar :(</span>
                     </v-tooltip>
-                    <img v-if="client.hasAvatar" v-img v-bind:src="`/avatar/dbid/${client.dbid}`" class="clientAvatar" :alt="`${client.nickname} avatar`"/>
+                    <img v-if="client.hasAvatar" v-lazy="`/avatar/dbid/${client.dbid}`" class="clientAvatar" :alt="`${client.nickname} avatar`"/>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
                     <v-list-tile-title>{{groups(client.groups)}} {{client.nickname}}</v-list-tile-title>
@@ -39,6 +39,10 @@
                         <v-tooltip bottom v-if="client.platform === 'Android'">
                             <v-icon slot="activator" small>mdi-android</v-icon>
                             <span>Stupid mobile android user</span>
+                        </v-tooltip>
+                        <v-tooltip bottom v-if="client.platform === 'Linux'">
+                            <v-icon slot="activator" small>mdi-linux</v-icon>
+                            <span>Awesome linux</span>
                         </v-tooltip>
                         <v-tooltip bottom v-if="client.channelCommander">
                             <v-icon color="orange" slot="activator" small>mdi-apple-keyboard-command</v-icon>
