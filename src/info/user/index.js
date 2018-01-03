@@ -4,7 +4,7 @@ import Vuetify from 'vuetify';
 import Index from './index.vue';
 import 'vuetify/dist/vuetify.min.css';
 import 'mdi/css/materialdesignicons.min.css';
-import settings from '../../settings';
+import settings from '../../view/settings';
 import VueImg from 'v-img';
 import Lazy from 'vue-lazy-image';
 
