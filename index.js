@@ -249,4 +249,7 @@ ts.login().then(ts.indexClients).then(() => {
 		}
 		console.log(`Listen on ${process.env.TSVHOST || "0.0.0.0"}:${process.env.TSVPORT || 5000}`);
 	});
-}).catch(console.error);
+}).catch(e => {
+	console.error(e);
+	process.exit(6);
+});
