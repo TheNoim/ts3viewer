@@ -76,6 +76,11 @@ class TSLib extends EventEmitter{
 			if (isOnline !== false) {
 				newU = await this.applyOnlinePatch(user, isOnline);
 			}
+			if (isOnline !== false) {
+				newU['lastActiveID'] = isOnline;
+			} else {
+				newU['lastActiveID'] = null;
+			}
 			return await newU.save();
 		}
 	}
@@ -103,6 +108,11 @@ class TSLib extends EventEmitter{
 		const isOnline = await this.isClientOnline({uid: user['uid']});
 		user['online'] = isOnline !== false;
 		if (lastActiveID) user['lastActiveID'] = lastActiveID;
+		if (isOnline !== false) {
+			user['lastActiveID'] = isOnline;
+		} else {
+			user['lastActiveID'] = null;
+		}
 		let newU = user;
 		if (isOnline !== false) {
 			newU = await this.applyOnlinePatch(user, isOnline);
