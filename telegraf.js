@@ -59,7 +59,10 @@ module.exports = (ts, fastify) => {
 		await bot.telegram.editMessageText(chatID, message.message_id, undefined, 'Successfully.');
 	});
 
-	bot.command('online', async ctx => {
+	bot.command('online', ctx => online);
+	bot.command('o', ctx => online);
+	
+	async function online(ctx) {
 		const chatID = ctx.message.chat.id;
 		const message = await ctx.replyWithMarkdown('***Processing request...***');
 		try {
@@ -83,7 +86,7 @@ module.exports = (ts, fastify) => {
 			string += e;
 			await bot.telegram.editMessageText(chatID, message.message_id, undefined, string, {parse_mode: 'Markdown'});
 		}
-	});
+	}
 
 	bot.command('list', async ctx => {
 		const chatID = ctx.message.chat.id;
