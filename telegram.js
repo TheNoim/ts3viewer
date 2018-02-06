@@ -68,7 +68,7 @@ module.exports = ts => {
 		*/remove* Remove your chat from the feed list`, {parse_mode: "Markdown"});
 	});
 
-	bot.onText(/\/online|\/o/, async (msg) => {
+	bot.onText(/\/online/, async (msg) => {
 		const m = await bot.sendMessage(msg.chat.id, `***Processing request...***`, {parse_mode: "Markdown"});
 		try {
 			const users = await ts.getOnlineClients();
