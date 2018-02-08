@@ -59,8 +59,8 @@ module.exports = (ts, fastify) => {
 		await bot.telegram.editMessageText(chatID, message.message_id, undefined, 'Successfully.');
 	});
 
-	bot.command('online', ctx => online);
-	bot.command('o', ctx => online);
+	bot.command('online', online);
+	bot.command('o', online);
 	
 	async function online(ctx) {
 		const chatID = ctx.message.chat.id;
